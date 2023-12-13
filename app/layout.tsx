@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Container } from '@/util/bootstrap';
 import 'bootstrap/dist/css/bootstrap.css';
+import AuthSession from "./_components/Providers";
 
 export const metadata: Metadata = {
   metadataBase: new URL('http://localhost:3000'),
@@ -38,9 +39,11 @@ export default function RootLayout({
   return (
     <html>
       <body>
-        <Container className="py-4">
-          {children}
-        </Container>
+        <AuthSession>
+            <Container className="py-4">
+              {children}
+            </Container>
+          </AuthSession>
       </body>
     </html>
   )

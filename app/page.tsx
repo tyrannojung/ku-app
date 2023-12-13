@@ -1,5 +1,5 @@
 import Image from 'next/image'
-import styles from './page.module.css'
+import styles from './css/page.module.css'
 
 export default function Home() {
   return (
@@ -16,7 +16,7 @@ export default function Home() {
           />
         </div>
         <br/>
-        <a href="/signin" className={styles.mainButton}>
+        <a href="/signup" className={styles.mainButton}>
           Create Amazing Blockchain Wallet!
         </a>
 

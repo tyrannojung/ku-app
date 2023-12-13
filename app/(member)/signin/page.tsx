@@ -21,6 +21,9 @@ export default function Signin() {
         /^(?=.*[a-z])[a-z0-9]{5,20}$/i,
         "Please enter a valid ID following the specified format."
       )    
+      .required('Required'),
+    publicKey: yup.string()
+      .matches(/^0x[a-fA-F0-9]{40}$/, 'Please enter a valid public key following the specified format.')
       .required('Required')
   });
 
@@ -30,6 +33,7 @@ export default function Signin() {
           validationSchema={validationSchema}
           initialValues={{
             id: 'tyrannojung',
+            publicKey: '0x84207aCCB87EC578Bef5f836aeC875979C1ABA85',
           }}
           onSubmit={async (values, {setErrors, setSubmitting }) => {
             console.log('hi')
@@ -37,6 +41,7 @@ export default function Signin() {
             
             const member_info : member = {
               id : values.id,
+              publicKey : values.publicKey,
             }
 
             const result = await signIn("credentials", {
@@ -51,7 +56,8 @@ export default function Signin() {
             } else {
               // error 표시
               setErrors({
-                id: 'Invalid ID or password',
+                id: ' ',
+                publicKey: 'Invalid ID or password'
               });
             }
 
@@ -93,6 +99,37 @@ export default function Signin() {
                                 {errors.id}
                             </Form.Control.Feedback>
                             </Form.Group>
+
+                            <Form.Group
+                              className="mb-3"
+                              controlId="formBasicPublicKey"
+                            >
+                              <Form.Label>Public Key</Form.Label>
+                            <Form.Control
+                              type="text"
+                              name="publicKey"
+                              value={values.publicKey}
+                              onChange={handleChange}
+                              isValid={touched.publicKey && !errors.publicKey}
+                              isInvalid={!!errors.publicKey}
+                            />
+                            <Form.Control.Feedback>
+                              Looks good!
+                            </Form.Control.Feedback>
+                            <Form.Control.Feedback type="invalid">
+                                {errors.publicKey}
+                            </Form.Control.Feedback>
+                            </Form.Group>
+                            <Form.Group
+                              className="mb-3"
+                              controlId="formBasicCheckbox"
+                            >
+                              <p className="small">
+                                <a className="text-primary" href="#!">
+                                  Forgot password?
+                                </a>
+                              </p>
+                            </Form.Group>
                             <div className="d-grid">
                               <Button variant="primary" type="submit">
                                 Login
@@ -100,9 +137,9 @@ export default function Signin() {
                             </div>
                             <div className="mt-3">
                               <p className="mb-0  text-center">
-                                Visit the main page &nbsp;
-                                <a href="/" className="text-primary fw-bold">
-                                  Go
+                                Don't have an account?{" "}
+                                <a href="/signup" className="text-primary fw-bold">
+                                  Sign Up
                                 </a>
                               </p>
                             </div>
