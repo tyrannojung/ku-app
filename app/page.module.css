@@ -1,0 +1,49 @@
+.main {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.logoContainer {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.logo {
+  max-width: 100%;
+  height: auto;
+}
+
+.mainButton {
+  padding: 15px 30px;
+  font-size: 18px;
+  font-weight: bold;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 20px;
+  width: 100%;
+}
+
+.mainButton:hover {
+  background-color: #2980b9;
+}
+
+/* 모바일 화면에 대한 반응형 */
+@media (max-width: 768px) {
+  .logo {
+    max-width: 200px; /* 모바일에서 로고 크기 줄이기 */
+  }
+
+  .mainButton {
+    font-size: 16px; /* 모바일에서 버튼 폰트 크기 줄이기 */
+  }
+}
