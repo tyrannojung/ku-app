@@ -165,7 +165,6 @@ export default function Signup() {
             body: JSON.stringify(member_info)
           }
           
-          
           const resp = await fetch('/api/member/signup/', options);
           const data = await resp.json()
           if(data.result == "success") {
