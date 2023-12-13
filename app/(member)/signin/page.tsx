@@ -4,7 +4,6 @@ import TOKAMAK_ICON from '@/public/assets/tn_logo.svg'
 import Image from 'next/image';
 
 import { member } from "@/app/_types/member"
-import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react'
 import { UserOperation } from "permissionless";
 import { bundlerSign } from "../_simpleTool/bundler/bundlerTool";
@@ -26,7 +25,6 @@ import { ethers } from 'ethers';
 export default function Signin() {
 
   const { Formik } = formik;
-  const router = useRouter();
 
   const validationSchema = yup.object().shape({
     email: yup.string()
@@ -48,7 +46,9 @@ export default function Signin() {
           // 해당 response에서 bundler에게 보낼 operation을 challenge로 만들어 유저에게 서명을 요청합니다.
           const response = await generateWebAuthnLoginOptions(values.email);
           if (!response.success || !response.data || !response.user) {
-            console.log(response.message ?? "Something went wrong!");
+            setErrors({
+              email: ' Invalid Email ',
+            });
             return;
           }
 
