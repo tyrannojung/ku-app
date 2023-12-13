@@ -4,7 +4,7 @@ import { concat, createClient, createPublicClient, encodeFunctionData, http, Hex
 import { UserOperation, bundlerActions, getSenderAddress, getUserOperationHash, GetUserOperationReceiptReturnType } from "permissionless"
 import { pimlicoBundlerActions, pimlicoPaymasterActions } from "permissionless/actions/pimlico"
 import { lineaTestnet } from "viem/chains"
-
+import { kv } from "@vercel/kv";
 
 const publicClient = createPublicClient({
   transport: http("https://linea-goerli.infura.io/v3/4c79c22d05294f9f81fbe2501462ac22"),
@@ -125,7 +125,7 @@ const sponsorUserOperationResult = await paymasterClient.sponsorUserOperation({
 
 
 
-export async function bundlerSign(value : UserOperation): Promise<boolean> {
+export async function bundlerSign(value : UserOperation, member : member): Promise<boolean> {
     
     const userOperationHash = await bundlerClient.sendUserOperation({
       userOperation: value,
@@ -144,8 +144,12 @@ export async function bundlerSign(value : UserOperation): Promise<boolean> {
     }
     
     // 아래 코드를 뷰로 보여준다.
-    
     const txHash = receipt.receipt.transactionHash
+    const session = kv.set(`${member.email}`, `${txHash}`);
+    const get_session = await session;
+    console.log("success set session domain====> ")
+    console.log(get_session)
+
     console.log(`UserOperation included: https://goerli.lineascan.build/tx/${txHash}`)
 
     return true

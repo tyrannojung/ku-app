@@ -37,13 +37,49 @@
   background-color: #2980b9;
 }
 
-/* 모바일 화면에 대한 반응형 */
+.domainLink {
+  font-size: 24px;
+  font-family: 'Roboto', sans-serif;
+  color: #2775FF;
+  transition: color 0.3s ease-in-out; 
+
+}
+
+.underlinedLink {
+  text-decoration: underline;
+  /* 다른 스타일도 추가 가능 */
+}
+
+.domainLink:hover {
+  color: #1952C0; 
+}
+
+.blinkingBar {
+  margin-left: 4px; /* 바와 텍스트 사이의 간격 조절 */
+  animation: blink-animation 0.8s infinite; /* 깜박임 애니메이션 설정 */
+}
+
+.domainText {
+  margin-top: 8px; /* 도메인 텍스트와의 간격 조절 */
+  font-size: 18px; /* 원하는 폰트 크기로 조절 */
+  color: #555; /* 원하는 색상으로 조절 */
+  display : block
+}
+
+@keyframes blink-animation {
+  50% {
+    opacity: 0; /* 50%의 시간 동안 바를 보이지 않도록 함 */
+  }
+}
+
+
 @media (max-width: 768px) {
   .logo {
-    max-width: 200px; /* 모바일에서 로고 크기 줄이기 */
+    max-width: 200px;
   }
 
   .mainButton {
-    font-size: 16px; /* 모바일에서 버튼 폰트 크기 줄이기 */
+    font-size: 16px;
   }
 }
+

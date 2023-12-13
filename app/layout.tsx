@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Container } from '@/util/bootstrap';
 import 'bootstrap/dist/css/bootstrap.css';
 import AuthSession from "./_components/Providers";
+import '@/app/css/default.css'
 
 export const metadata: Metadata = {
   metadataBase: new URL('http://localhost:3000'),

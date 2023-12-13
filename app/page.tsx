@@ -19,7 +19,6 @@ export default function Home() {
         <a href="/signup" className={styles.mainButton}>
           Create Amazing Blockchain Wallet!
         </a>
-
       </div>
     </main>
   )

@@ -101,185 +101,187 @@ export default function Signup() {
       .required('Required'),
   });
   return (
-    <Formik
-      validationSchema={validationSchema}
-      initialValues={{
-        id: '',
-        email: '',
-        name: '',
-      }}
+    <div>
+      <Formik
+        validationSchema={validationSchema}
+        initialValues={{
+          id: '',
+          email: '',
+          name: '',
+        }}
 
-      onSubmit={async (values, { setSubmitting }) => {
-        setSubmitting(true); // 비동기통신
-        
-        // 유저의 email을 기준으로 계정생성(하드웨어에 키저장) 옵션을 만들어 줍니다.
-        const response = await generateWebAuthnRegistrationOptions(values.email);
-        
-
-        if (!response.success || !response.data) {
-          alert(response.message ?? "Something went wrong!");
-          return;
-        }
-
-        // 계정생성 옵션을 통해 계정(하드웨어에 키저장)을 생성합니다.
-        const passkey = await startRegistration(response.data);
-        
-        // 유저의 고유 id
-        const credId = `0x${base64url.toBuffer(passkey.id).toString('hex')}`;
-        //유저의 pubk x, y 쌍을 구한다.
-        const decodedPassKey = decodeRegistrationCredential(passkey);
-        // 유저의 pubk x, y쌍
-        const pubKeyCoordinates = [
-          '0x' +
-          base64url
-            .toBuffer(decodedPassKey.response.attestationObject.authData.parsedCredentialPublicKey?.x || '')
-            .toString('hex'),
-          '0x' +
-          base64url
-            .toBuffer(decodedPassKey.response.attestationObject.authData.parsedCredentialPublicKey?.y || '')
-            .toString('hex'),
-        ];
-         
-        // 해당 검증이 정상적인지 검사합니다. 
-        const verifyResponse = await verifyWebAuthnRegistration(passkey);
-        
-        //검증이 정상적이면,  회원가입을진행합니다.
-        if (verifyResponse.value) {
-          const member_info : member = {
-            id : values.id,
-            publicKey : verifyResponse.value.credentialPublicKey,
-            pubk : credId,
-            pubkCoordinates : pubKeyCoordinates,
-            email : values.email,
-            name : values.name,
-            updatedAt : null,
-            createAt : new Date(),
-            devices : [verifyResponse.value]
-          }
-          const options = {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(member_info)
-          }
-          const resp = await fetch('/api/member/signup/', options);
+        onSubmit={async (values, { setSubmitting }) => {
+          setSubmitting(true); // 비동기통신
           
-          // 회원가입 완료 후 로그인 페이지로 이동한다.
-          const data = await resp.json()
-          if(data.result == "success") {
-            router.push('/signin');
-            router.refresh();
+          // 유저의 email을 기준으로 계정생성(하드웨어에 키저장) 옵션을 만들어 줍니다.
+          const response = await generateWebAuthnRegistrationOptions(values.email);
+          
+
+          if (!response.success || !response.data) {
+            alert(response.message ?? "Something went wrong!");
+            return;
           }
 
-        }
-      }}
-    >
-      {({ handleSubmit, handleChange, values, touched, errors}) => (
-        <Container>
-          <Row className="vh-100 d-flex justify-content-center align-items-center">
-            <Col md={8} lg={6} xs={12}>
-            <div className="border border-2 border-primary"></div>
-              <Card className="shadow px-4">
-                <Card.Body>
-                  <div className="mb-3 mt-md-4">
-                    <h2 className="fw-bold mb-2 text-center text-uppercase ">
-                      <Image src={TOKAMAK_ICON} alt="" className="middle_logo" />
-                    </h2>
-                    <div className="mb-3">
-                    <Form noValidate onSubmit={e => {
-                      e.preventDefault();
-                      handleSubmit(e)
-                    }} autoComplete="off">
-                        <Form.Group className="mb-3" controlId="ID">
-                          <Form.Label className="text-center">
-                            ID
-                          </Form.Label>
-                          <Form.Control
-                            type="text"
-                            name="id"
-                            placeholder="id"
-                            value={values.id}
-                            onChange={handleChange}
-                            isValid={touched.id && !errors.id}
-                            isInvalid={!!errors.id}
-                          />
-                          <Form.Control.Feedback>
-                            Looks good!
-                          </Form.Control.Feedback>
-                          <Form.Control.Feedback type="invalid">
-                              {errors.id}
-                          </Form.Control.Feedback>
-                        </Form.Group>
+          // 계정생성 옵션을 통해 계정(하드웨어에 키저장)을 생성합니다.
+          const passkey = await startRegistration(response.data);
+          
+          // 유저의 고유 id
+          const credId = `0x${base64url.toBuffer(passkey.id).toString('hex')}`;
+          //유저의 pubk x, y 쌍을 구한다.
+          const decodedPassKey = decodeRegistrationCredential(passkey);
+          // 유저의 pubk x, y쌍
+          const pubKeyCoordinates = [
+            '0x' +
+            base64url
+              .toBuffer(decodedPassKey.response.attestationObject.authData.parsedCredentialPublicKey?.x || '')
+              .toString('hex'),
+            '0x' +
+            base64url
+              .toBuffer(decodedPassKey.response.attestationObject.authData.parsedCredentialPublicKey?.y || '')
+              .toString('hex'),
+          ];
+          
+          // 해당 검증이 정상적인지 검사합니다. 
+          const verifyResponse = await verifyWebAuthnRegistration(passkey);
+          
+          //검증이 정상적이면,  회원가입을진행합니다.
+          if (verifyResponse.value) {
+            const member_info : member = {
+              id : values.id,
+              publicKey : verifyResponse.value.credentialPublicKey,
+              pubk : credId,
+              pubkCoordinates : pubKeyCoordinates,
+              email : values.email,
+              name : values.name,
+              updatedAt : null,
+              createAt : new Date(),
+              devices : [verifyResponse.value]
+            }
+            const options = {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(member_info)
+            }
+            const resp = await fetch('/api/member/signup/', options);
+            
+            // 회원가입 완료 후 로그인 페이지로 이동한다.
+            const data = await resp.json()
+            if(data.result == "success") {
+              router.push('/signin');
+              router.refresh();
+            }
 
-                        <Form.Group className="mb-3" controlId="formBasicEmail">
-                          <Form.Label className="text-center">
-                            Email address
-                          </Form.Label>
-                          <InputGroup hasValidation>
-                            <InputGroup.Text id="inputGroupPrepend">@</InputGroup.Text>
+          }
+        }}
+      >
+        {({ handleSubmit, handleChange, values, touched, errors}) => (
+          <Container>
+            <Row className="vh-100 d-flex justify-content-center align-items-center">
+              <Col md={8} lg={6} xs={12}>
+              <div className="border border-2 border-primary"></div>
+                <Card className="shadow px-4">
+                  <Card.Body>
+                    <div className="mb-3 mt-md-4">
+                      <h2 className="fw-bold mb-2 text-center text-uppercase ">
+                        <Image src={TOKAMAK_ICON} alt="" className="middle_logo" />
+                      </h2>
+                      <div className="mb-3">
+                      <Form noValidate onSubmit={e => {
+                        e.preventDefault();
+                        handleSubmit(e)
+                      }} autoComplete="off">
+                          <Form.Group className="mb-3" controlId="ID">
+                            <Form.Label className="text-center">
+                              ID
+                            </Form.Label>
                             <Form.Control
                               type="text"
-                              placeholder="email"
-                              aria-describedby="inputGroupPrepend"
-                              name="email"
-                              value={values.email}
+                              name="id"
+                              placeholder="id"
+                              value={values.id}
                               onChange={handleChange}
-                              isValid={touched.email && !errors.email}
-                              isInvalid={!!errors.email}
+                              isValid={touched.id && !errors.id}
+                              isInvalid={!!errors.id}
                             />
                             <Form.Control.Feedback>
                               Looks good!
                             </Form.Control.Feedback>
                             <Form.Control.Feedback type="invalid">
-                              {errors.email}
+                                {errors.id}
                             </Form.Control.Feedback>
-                          </InputGroup>
-                        </Form.Group>
+                          </Form.Group>
 
-                        <Form.Group className="mb-3" controlId="formBasicName">
-                            <Form.Label>Name</Form.Label>
-                            <Form.Control
-                              type="text"
-                              name="name"
-                              placeholder="name"
-                              value={values.name}
-                              onChange={handleChange}
-                              isValid={touched.name && !errors.name}
-                              isInvalid={!!errors.name}
-                            />
-                            <Form.Control.Feedback>
-                              Looks good!
-                            </Form.Control.Feedback>
-                            <Form.Control.Feedback type="invalid">
-                                {errors.name}
+                          <Form.Group className="mb-3" controlId="formBasicEmail">
+                            <Form.Label className="text-center">
+                              Email address
+                            </Form.Label>
+                            <InputGroup hasValidation>
+                              <InputGroup.Text id="inputGroupPrepend">@</InputGroup.Text>
+                              <Form.Control
+                                type="text"
+                                placeholder="email"
+                                aria-describedby="inputGroupPrepend"
+                                name="email"
+                                value={values.email}
+                                onChange={handleChange}
+                                isValid={touched.email && !errors.email}
+                                isInvalid={!!errors.email}
+                              />
+                              <Form.Control.Feedback>
+                                Looks good!
                               </Form.Control.Feedback>
-                        </Form.Group>
+                              <Form.Control.Feedback type="invalid">
+                                {errors.email}
+                              </Form.Control.Feedback>
+                            </InputGroup>
+                          </Form.Group>
 
-                        <div className="d-grid">
-                          <Button variant="primary" type="submit">
-                            Create Account
-                          </Button>
+                          <Form.Group className="mb-3" controlId="formBasicName">
+                              <Form.Label>Name</Form.Label>
+                              <Form.Control
+                                type="text"
+                                name="name"
+                                placeholder="name"
+                                value={values.name}
+                                onChange={handleChange}
+                                isValid={touched.name && !errors.name}
+                                isInvalid={!!errors.name}
+                              />
+                              <Form.Control.Feedback>
+                                Looks good!
+                              </Form.Control.Feedback>
+                              <Form.Control.Feedback type="invalid">
+                                  {errors.name}
+                                </Form.Control.Feedback>
+                          </Form.Group>
+
+                          <div className="d-grid">
+                            <Button variant="primary" type="submit">
+                              Create Account
+                            </Button>
+                          </div>
+
+                        </Form>
+                        <div className="mt-3">
+                          <p className="mb-0  text-center">
+                          Already have an account??{" "}
+                            <a href="/signin" className="text-primary fw-bold">
+                              Sign In
+                            </a>
+                          </p>
                         </div>
-
-                      </Form>
-                      <div className="mt-3">
-                        <p className="mb-0  text-center">
-                        Already have an account??{" "}
-                          <a href="/signin" className="text-primary fw-bold">
-                            Sign In
-                          </a>
-                        </p>
                       </div>
                     </div>
-                  </div>
-                </Card.Body>
-              </Card>
-            </Col>
-          </Row>
-        </Container>
-      )}
-    </Formik>
+                  </Card.Body>
+                </Card>
+              </Col>
+            </Row>
+          </Container>
+        )}
+      </Formik>
+    </div>
   );
 }
   
