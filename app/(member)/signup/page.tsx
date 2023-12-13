@@ -156,7 +156,6 @@ export default function Signup() {
             createAt : new Date(),
             devices : [verifyResponse.value]
           }
-      
           const options = {
             method: 'POST',
             headers: {
@@ -164,8 +163,9 @@ export default function Signup() {
             },
             body: JSON.stringify(member_info)
           }
-          
           const resp = await fetch('/api/member/signup/', options);
+          
+          // 회원가입 완료 후 로그인 페이지로 이동한다.
           const data = await resp.json()
           if(data.result == "success") {
             router.push('/signin');

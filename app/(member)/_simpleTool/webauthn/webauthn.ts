@@ -133,17 +133,16 @@ export const generateWebAuthnLoginOptions = async (email: string) => {
       message: "User does not exist",
     };
   }
+  // 유저의 요청을 생성합니다.
   const userOperation: UserOperation = await bundlerCall(user);
+  // --> 여기에서 지갑 생성, user요청, paymaster가 담긴 operation을 압축해서 signature에 담아줍니다.
+
+  // 해당 signature를 유저의 기기로 보낼 챌린지로 만듭니다.
   const valueBeforeSigning = userOperation.signature;
-  
-  console.log(valueBeforeSigning)
-  const challenge2 = Buffer.from(valueBeforeSigning.slice(2), 'hex');
-  console.log(challenge2)
-  const challeng3 = base64url.encode(challenge2);
-  console.log(challeng3)
+  const challengeBuffer = Buffer.from(valueBeforeSigning.slice(2), 'hex');
+  const challengEncode = base64url.encode(challengeBuffer);
 
-
-  
+  //유저의 기본 option을 만들어줍니다. 추후 해당 옵션을 이용해 operation-signatue를 담은 옵션을 만들어 줍니다.
   const opts: GenerateAuthenticationOptionsOpts = {
     timeout: 60000,
     allowCredentials: user.devices.map((dev) => ({
@@ -157,10 +156,10 @@ export const generateWebAuthnLoginOptions = async (email: string) => {
 
   let options: any = await generateAuthenticationOptions(opts);
 
-  await updateCurrentSession({ currentChallenge: options.challenge, email });
   if(options.allowCredentials){
+    // operation-signatue를 담은 옵션을 생성해 줍니다.
     const opts2 = {
-      challenge: challeng3,
+      challenge: challengEncode,
       allowCredentials: [
         {
           id: options.allowCredentials[0].id,
@@ -171,10 +170,9 @@ export const generateWebAuthnLoginOptions = async (email: string) => {
     };
 
     options = opts2
+    await updateCurrentSession({ currentChallenge: options.challenge, email });
+
   }
-  
-  console.log(options)
-  
   
   return {
     success: true,
@@ -183,6 +181,8 @@ export const generateWebAuthnLoginOptions = async (email: string) => {
     userOperation : userOperation
   };
 };
+
+
 
 export const verifyWebAuthnLogin = async (data: AuthenticationResponseJSON) => {
   const {

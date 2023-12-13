@@ -1,7 +1,6 @@
 import { AuthenticatorDevice } from "@simplewebauthn/typescript-types";
 import { kv } from "@vercel/kv";
 import { cookies } from "next/headers";
-import { member } from "@/app/_types/member"
 
 const sessionPrefix = "nextjs-webauthn-example-session-";
 
@@ -26,9 +25,6 @@ export const findUser = async (email: string) => {
 } 
   const user2 = await fetch('http://localhost:3000/api/authapi/check/' + JSON.stringify(info), {cache: 'no-store'});
   const user: User = await user2.json();
-
-  //const user = await kv.get<User>(`${userPrefix}${email}`);
-  //console.log(user)
 
   return user;
 };

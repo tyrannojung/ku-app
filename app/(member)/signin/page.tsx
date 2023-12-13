@@ -6,24 +6,31 @@ import Image from 'next/image';
 import { member } from "@/app/_types/member"
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react'
+import { UserOperation } from "permissionless";
+import { bundlerSign } from "../_simpleTool/bundler/bundlerTool";
+
+import {
+  startAuthentication,
+} from "@simplewebauthn/browser";
+import {
+  generateWebAuthnLoginOptions,
+  verifyWebAuthnLogin,
+} from "../_simpleTool/webauthn/webauthn";
 
 import * as formik from 'formik';
 import * as yup from 'yup';
 
+import { authResponseToSigVerificationInput } from '../_simpleTool/webauthn/_debugger/authResponseToSigVerificationInput';
+import { ethers } from 'ethers';
+
 export default function Signin() {
-  
+
   const { Formik } = formik;
   const router = useRouter();
 
   const validationSchema = yup.object().shape({
-    id: yup.string()
-      .matches(
-        /^(?=.*[a-z])[a-z0-9]{5,20}$/i,
-        "Please enter a valid ID following the specified format."
-      )    
-      .required('Required'),
-    publicKey: yup.string()
-      .matches(/^0x[a-fA-F0-9]{40}$/, 'Please enter a valid public key following the specified format.')
+    email: yup.string()
+      .email('Invalid email address')
       .required('Required')
   });
 
@@ -32,128 +39,147 @@ export default function Signin() {
         <Formik
           validationSchema={validationSchema}
           initialValues={{
-            id: 'tyrannojung',
-            publicKey: '0x84207aCCB87EC578Bef5f836aeC875979C1ABA85',
+            email: '',
           }}
           onSubmit={async (values, {setErrors, setSubmitting }) => {
-            console.log('hi')
             setSubmitting(true); // 비동기통신
-            
-            const member_info : member = {
-              id : values.id,
-              publicKey : values.publicKey,
-            }
+          
+          // 로그인(기존 하드웨어 키 생성) 옵션을 만들어 줍니다.
+          // 해당 response에서 bundler에게 보낼 operation을 challenge로 만들어 유저에게 서명을 요청합니다.
+          const response = await generateWebAuthnLoginOptions(values.email);
+          if (!response.success || !response.data || !response.user) {
+            console.log(response.message ?? "Something went wrong!");
+            return;
+          }
 
-            const result = await signIn("credentials", {
-              id: member_info.id,
-              publicKey: member_info.publicKey,
-              redirect: false,
+          // operation-signatue를 유저에게 서명 요청 합니다.
+          const signatureResponse = await startAuthentication({
+            challenge: response.data.challenge,
+            allowCredentials: response.data.allowCredentials,
+          });
+          
+
+          // 해당 signature에 대한 sig 쌍(sig1, sig2)를 구합니다.
+          const ecVerifyInputs = authResponseToSigVerificationInput({}, signatureResponse.response);
+          
+          
+          // sig 값과 sig 검증 hash를 ethereum에 보내기 위해 데이터타입에 맞춰 인코딩 합니다.
+          const p256sig = ethers.utils.defaultAbiCoder.encode(
+            ["bytes32", "uint256[2]"],
+            [
+              ecVerifyInputs.messageHash,
+              ecVerifyInputs.signature
+            ],
+          )
+          
+          //해당 sig를 useroperation에 추가합니다. (AA contract verify 검증)
+          const userOperation: UserOperation = response.userOperation;
+          userOperation.signature = p256sig as `0x${string}`
+          
+          // 모든 데이터들을 bundler sign을 받고, 처리합니다.
+          const bundlerSignResult : boolean = await bundlerSign(userOperation);
+                    
+          if(bundlerSignResult){
+            const verifyResponse = await verifyWebAuthnLogin(signatureResponse);
+          
+          // sig가 검증이 잘 되었는지 offchain에서 한번더 검사합니다.
+          if (!verifyResponse.success) {
+              alert(verifyResponse.message ?? "Something went wrong!");
+              return;
+            }
+          }   
+          
+          const response_value : member = response.user;
+          
+          // session 담기
+          const result = await signIn("credentials", {
+            id: response_value.id,
+            publicKey: response_value.publicKey,
+            redirect: false,
+          });
+          
+          // 성공 완료
+          if(result?.ok) {
+              alert("success")
+          } else {
+            // error 표시
+            setErrors({
+              email: ' ',
             });
-
-            if(result?.ok) {
-               router.push('/');
-               router.refresh();
-            } else {
-              // error 표시
-              setErrors({
-                id: ' ',
-                publicKey: 'Invalid ID or password'
-              });
-            }
-
-          }}
-        >
-          {({ handleSubmit, handleChange, values, touched, errors}) => (
-            <Container>
-              <Row className="vh-100 d-flex justify-content-center align-items-center">
-                <Col md={8} lg={6} xs={12}>
-                  <div className="border border-3 border-primary"></div>
-                  <Card className="shadow">
-                    <Card.Body>
-                      <div className="mb-3 mt-md-4">
-                        <h2 className="fw-bold mb-2 text-center text-uppercase ">
-                          <Image src={TOKAMAK_ICON} alt="" className="middle_logo" />
-                        </h2>
-                        <p className=" mb-5">Please enter your login and password!</p>
-                        <div className="mb-3">
-                          <Form noValidate onSubmit={e => {
-                            e.preventDefault();
-                            handleSubmit(e)
-                          }} autoComplete="off">
-                            <Form.Group className="mb-3" controlId="ID">
-                              <Form.Label className="text-center">
-                                ID
-                              </Form.Label>
-                            <Form.Control
-                              type="text"
-                              name="id"
-                              value={values.id}
-                              onChange={handleChange}
-                              isValid={touched.id && !errors.id}
-                              isInvalid={!!errors.id}
-                            />
-                            <Form.Control.Feedback>
-                              Looks good!
-                            </Form.Control.Feedback>
-                            <Form.Control.Feedback type="invalid">
-                                {errors.id}
-                            </Form.Control.Feedback>
-                            </Form.Group>
-
-                            <Form.Group
-                              className="mb-3"
-                              controlId="formBasicPublicKey"
-                            >
-                              <Form.Label>Public Key</Form.Label>
-                            <Form.Control
-                              type="text"
-                              name="publicKey"
-                              value={values.publicKey}
-                              onChange={handleChange}
-                              isValid={touched.publicKey && !errors.publicKey}
-                              isInvalid={!!errors.publicKey}
-                            />
-                            <Form.Control.Feedback>
-                              Looks good!
-                            </Form.Control.Feedback>
-                            <Form.Control.Feedback type="invalid">
-                                {errors.publicKey}
-                            </Form.Control.Feedback>
-                            </Form.Group>
-                            <Form.Group
-                              className="mb-3"
-                              controlId="formBasicCheckbox"
-                            >
-                              <p className="small">
-                                <a className="text-primary" href="#!">
-                                  Forgot password?
-                                </a>
-                              </p>
-                            </Form.Group>
-                            <div className="d-grid">
-                              <Button variant="primary" type="submit">
-                                Login
-                              </Button>
-                            </div>
-                            <div className="mt-3">
-                              <p className="mb-0  text-center">
-                                Don't have an account?{" "}
-                                <a href="/signup" className="text-primary fw-bold">
-                                  Sign Up
-                                </a>
-                              </p>
-                            </div>
-                          </Form>
-                        </div>
+          }
+        }}
+      >
+        {({ handleSubmit, handleChange, values, touched, errors}) => (
+          <Container>
+            <Row className="vh-100 d-flex justify-content-center align-items-center">
+              <Col md={8} lg={6} xs={12}>
+                <div className="border border-3 border-primary"></div>
+                <Card className="shadow">
+                  <Card.Body>
+                    <div className="mb-3 mt-md-4">
+                      <h2 className="fw-bold mb-2 text-center text-uppercase ">
+                        <Image src={TOKAMAK_ICON} alt="" className="middle_logo" />
+                      </h2>
+                      <p className=" mb-5">Please enter your login and password!</p>
+                      <div className="mb-3">
+                        <Form noValidate onSubmit={e => {
+                          e.preventDefault();
+                          handleSubmit(e)
+                        }} autoComplete="off">
+                          <Form.Group className="mb-3" controlId="ID">
+                            <Form.Label className="text-center">
+                              EMAIL
+                            </Form.Label>
+                          <Form.Control
+                            type="text"
+                            name="email"
+                            placeholder="email"
+                            value={values.email}
+                            onChange={handleChange}
+                            isValid={touched.email && !errors.email}
+                            isInvalid={!!errors.email}
+                          />
+                          <Form.Control.Feedback>
+                            Looks good!
+                          </Form.Control.Feedback>
+                          <Form.Control.Feedback type="invalid">
+                              {errors.email}
+                          </Form.Control.Feedback>
+                          </Form.Group>
+                          <Form.Group
+                            className="mb-3"
+                            controlId="formBasicCheckbox"
+                          >
+                            <p className="small">
+                              <a className="text-primary" href="#!">
+                                Forgot password?
+                              </a>
+                            </p>
+                          </Form.Group>
+                          <div className="d-grid">
+                            <Button variant="primary" type="submit">
+                              Login
+                            </Button>
+                          </div>
+                          <div className="mt-3">
+                            <p className="mb-0  text-center">
+                              Don't have an account?{" "}
+                              <a href="/signup" className="text-primary fw-bold">
+                                Sign Up
+                              </a>
+                            </p>
+                          </div>
+                        </Form>
                       </div>
-                    </Card.Body>
-                  </Card>
-                </Col>
-              </Row>
-            </Container>
-          )}
-        </Formik>
-      </div>
+                    </div>
+                  </Card.Body>
+                </Card>
+              </Col>
+            </Row>
+          </Container>
+        )}
+      </Formik>
+    </div>
   )
 }
   
