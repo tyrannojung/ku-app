@@ -24,6 +24,10 @@ import * as yup from 'yup';
 import { authResponseToSigVerificationInput } from '../_simpleTool/webauthn/_debugger/authResponseToSigVerificationInput';
 import { ethers } from 'ethers';
 
+import base64url from 'base64url';
+import { decodeAuthenticationCredential } from "../_simpleTool/webauthn/_debugger/decodeAuthenticationCredential";
+import { toHex } from "viem"
+
 export default function Signin() {
 
   const { Formik } = formik;
@@ -63,6 +67,36 @@ export default function Signin() {
                   challenge: response.data.challenge,
                   allowCredentials: response.data.allowCredentials,
                 });
+
+                /**여기수정함
+                 * 
+                 */
+
+                const authenticatorDataBytes = signatureResponse.response.authenticatorData;
+                // Base64URL을 디코딩하여 바이트 배열로 변환
+                const decodedBytes = base64url.toBuffer(authenticatorDataBytes);
+                // 바이트 배열을 16진수 문자열로 변환
+                const hexString = `0x${decodedBytes.toString('hex')}`;
+                console.log("!!authenticatorData ====", hexString);
+                console.log("base64url.decode====확인", base64url.decode(response.data.challenge))
+                console.log("!!byte challenge hex값 ====", toHex(base64url.decode(response.data.challenge)));
+                
+                const { response: decodedResponse } = decodeAuthenticationCredential(signatureResponse)
+                const clientDataJSON_string = JSON.stringify(decodedResponse.clientDataJSON);
+                const challengeLocation = BigInt(clientDataJSON_string.indexOf('"challenge":'));
+                const responseTypeLocation = BigInt(clientDataJSON_string.indexOf('"type":'));
+                console.log("clientDataJSON !!", clientDataJSON_string)
+                console.log("challengeLocation !!" , challengeLocation)
+                console.log("responseTypeLocation !!" , responseTypeLocation)
+                
+                return
+                  /**
+                 * END
+                 */
+
+
+
+
                 const verifyResponse = await verifyWebAuthnLogin(signatureResponse);
                 
                 // sig가 검증이 잘 되었는지 검사합니다.
