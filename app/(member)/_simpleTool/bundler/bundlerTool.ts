@@ -136,20 +136,29 @@ export async function bundlerSign(value : UserOperation, member : member): Promi
      
     // let's also wait for the userOperation to be included, by continually querying for the receipts
     console.log("Querying for receipts...")
-    
+
     let receipt: GetUserOperationReceiptReturnType = null 
     while (receipt === null) {
         await new Promise((resolve) => setTimeout(resolve, 1000))
         receipt = await bundlerClient.getUserOperationReceipt({ hash: userOperationHash });
         console.log(receipt === null ? "Still waiting..." : `Receipt received: ${receipt.success ? "success" : "failure"}`)
     }
-    
     // 아래 코드를 뷰로 보여준다.
     const txHash = receipt.receipt.transactionHash
-    const session = kv.set(`${member.email}`, `${txHash}`);
-    const get_session = await session;
-    console.log("success set session domain====> ")
-    console.log(get_session)
+    
+    const options = {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        _id: member._id,
+      }),
+    }
+
+    const resp = await fetch('/api/member/txupdate/', options);
+
+
 
     console.log(`UserOperation included: https://goerli.lineascan.build/tx/${txHash}`)
 

@@ -12,7 +12,9 @@ export interface member {
     name? : string
     updatedAt? : Date | null
     createAt? : Date
-    devices? : UserDevice[];
+    devices? : UserDevice[]
+    tx? : boolean
+    txhash? : string
 }
 
 type UserDevice = Omit<
