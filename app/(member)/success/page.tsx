@@ -38,19 +38,26 @@ export default function Home() {
 
   return (
     <main className={styles.main}>
-    <div className={styles.center}>
-      <div className={styles.logoContainer}>
-        <Link href="/" className={styles.domainLink}>
-          <span ref={linkRef} style={{ fontSize: '28px' }} ></span>
-          {showBar && <span className={styles.blinkingBar}>|</span>}
-        </Link>
-      </div>
-      {showDomain && (
-        <div className={styles.domainText}>
-          <p>Link : </p> <Link href="/" className={styles.underlinedLink}>yourdomain.com</Link>
+    {
+      status === "loading"
+      ? <h1>loading</h1>
+      : session && session.user
+      ?
+      <div className={styles.center}>
+        <div className={styles.logoContainer}>
+          <Link href="/" className={styles.domainLink}>
+            <span ref={linkRef} style={{ fontSize: '28px' }} ></span>
+            {showBar && <span className={styles.blinkingBar}>|</span>}
+          </Link>
         </div>
-      )}
-    </div>
+        {showDomain && (
+          <div className={styles.domainText}>
+            <p>Link : </p> <Link href={"https://goerli.lineascan.build/tx/" + session.user.txhash} className={styles.underlinedLink}>{"https://goerli.lineascan.build/tx/" + session.user.txhash}`</Link>
+          </div>
+        )}
+      </div> 
+      : <h1>wrong</h1>
+    }
   </main>
   );
 }
