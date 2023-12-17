@@ -135,28 +135,32 @@ export const generateWebAuthnLoginOptions = async (email: string) => {
       success: false,
       message: "User does not exist",
     };
+
   // 스마트컨트랙트 지갑을 이미 생성한 경우
-  }else if(user.txCheck){
+  }
+    else if(user.txCheck)
+  {
     const result = await generateOptions('already', user);
     
     // option 생성 실패
-    if(result?.resultValue){
+    if(result.resultValue){
       return {
         success: false,
         message: "Something went wrong!",
       }; 
     }
+
     // option 생성 성공
     return {
       success: true,
       tx: true,
-      data: result?.options
+      user: user,
+      data: result.options
     };
 
   }
   
   // 스마트컨트랙트 지갑 생성(신규 가입 및 로그인 유저)
-
   // 유저의 요청을 생성합니다.
   const userOperation: UserOperation = await bundlerCall(user);
   // --> 여기에서 지갑 생성, user요청, paymaster가 담긴 operation을 압축해서 signature에 담아줍니다.
@@ -273,6 +277,7 @@ async function generateOptions(type:string, user:member) {
       options: options
     }
   }
+
   const opts: GenerateAuthenticationOptionsOpts = {
     timeout: 60000,
     allowCredentials: user.devices.map((dev) => ({
@@ -285,7 +290,14 @@ async function generateOptions(type:string, user:member) {
   };
   // 신규가입일 때,
   if(type == "new") {
-  
+    
+    // 리팩토링 필요
+    return {
+      resultValue: true,
+      options: options
+    }
+
+
   // 기존가입자일 때,
   } else {
     
