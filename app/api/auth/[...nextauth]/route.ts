@@ -24,6 +24,8 @@ const handler = NextAuth({
             publicKey: credentials?.publicKey,
           }),
         }
+
+        console.log(`user is ????====== ${process.env.NEXT_PUBLIC_VERCEL_URL}`)
         const res = await fetch(`${process.env.NEXT_PUBLIC_VERCEL_URL}/api/member/signin`, options);
         const user = await res.json();
 
