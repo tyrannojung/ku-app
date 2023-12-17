@@ -68,38 +68,36 @@ export default function Signin() {
                   allowCredentials: response.data.allowCredentials,
                 });
 
-                /**여기수정함
-                 * 
-                 */
-                console.log("User ======= !!",response.user)
+                // /**여기수정함
+                //  * 
+                //  */
+                // console.log("User ======= !!",response.user)
 
 
-                const authenticatorDataBytes = signatureResponse.response.authenticatorData;
-                // Base64URL을 디코딩하여 바이트 배열로 변환
-                const decodedBytes = base64url.toBuffer(authenticatorDataBytes);
-                // 바이트 배열을 16진수 문자열로 변환
-                const hexString = `0x${decodedBytes.toString('hex')}`;
-                console.log("!!authenticatorData ====", hexString);
-                console.log("base64url.decode====확인", base64url.toBuffer(response.data.challenge))
-                console.log("!!byte challenge hex값 ====", toHex(base64url.toBuffer(response.data.challenge)));
+                // const authenticatorDataBytes = signatureResponse.response.authenticatorData;
+                // // Base64URL을 디코딩하여 바이트 배열로 변환
+                // const decodedBytes = base64url.toBuffer(authenticatorDataBytes);
+                // // 바이트 배열을 16진수 문자열로 변환
+                // const hexString = `0x${decodedBytes.toString('hex')}`;
+                // console.log("!!authenticatorData ====", hexString);
+                // console.log("base64url.decode====확인", base64url.toBuffer(response.data.challenge))
+                // console.log("!!byte challenge hex값 ====", toHex(base64url.toBuffer(response.data.challenge)));
                 
-                const { response: decodedResponse } = decodeAuthenticationCredential(signatureResponse)
-                const clientDataJSON_string = JSON.stringify(decodedResponse.clientDataJSON);
-                const challengeLocation = BigInt(clientDataJSON_string.indexOf('"challenge":'));
-                const responseTypeLocation = BigInt(clientDataJSON_string.indexOf('"type":'));
-                console.log("clientDataJSON !!", clientDataJSON_string)
-                console.log("challengeLocation !!" , challengeLocation)
-                console.log("responseTypeLocation !!" , responseTypeLocation)
+                // const { response: decodedResponse } = decodeAuthenticationCredential(signatureResponse)
+                // const clientDataJSON_string = JSON.stringify(decodedResponse.clientDataJSON);
+                // const challengeLocation = BigInt(clientDataJSON_string.indexOf('"challenge":'));
+                // const responseTypeLocation = BigInt(clientDataJSON_string.indexOf('"type":'));
+                // console.log("clientDataJSON !!", clientDataJSON_string)
+                // console.log("challengeLocation !!" , challengeLocation)
+                // console.log("responseTypeLocation !!" , responseTypeLocation)
                 
-                const ecVerifyInputsTest = authResponseToSigVerificationInput({}, signatureResponse.response);
-                console.log("sig=======!!", ecVerifyInputsTest);
+                // const ecVerifyInputsTest = authResponseToSigVerificationInput({}, signatureResponse.response);
+                // console.log("sig=======!!", ecVerifyInputsTest);
 
-                return
-                  /**
-                 * END
-                 */
-
-
+                // return
+                //   /**
+                //  * END
+                //  */
 
 
                 const verifyResponse = await verifyWebAuthnLogin(signatureResponse);

@@ -136,6 +136,7 @@ export async function bundlerSign(value : UserOperation, member : member): Promi
      
     // let's also wait for the userOperation to be included, by continually querying for the receipts
     console.log("Querying for receipts...")
+    
     let receipt: GetUserOperationReceiptReturnType = null 
     while (receipt === null) {
         await new Promise((resolve) => setTimeout(resolve, 1000))

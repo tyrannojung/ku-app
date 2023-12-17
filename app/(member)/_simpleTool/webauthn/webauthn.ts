@@ -138,13 +138,9 @@ export const generateWebAuthnLoginOptions = async (email: string) => {
 
   // 해당 signature를 유저의 기기로 보낼 챌린지로 만듭니다.
   const valueBeforeSigning = userOperation.signature;
+  
   //const challengeBuffer = Buffer.from(valueBeforeSigning.slice(2), 'hex');
-  const challengEncode = base64url.encode("test");
-  
-  //console.log("base64url====확인", challengeBuffer)
-  console.log("!!challengEncode11111=== clientJson안에 있는 값", challengEncode)
-  console.log("!!challengDecode22222=== ", base64url.toBuffer(challengEncode))
-  
+  const challengEncode = base64url.encode(valueBeforeSigning);
 
   //유저의 기본 option을 만들어줍니다. 추후 해당 옵션을 이용해 operation-signatue를 담은 옵션을 만들어 줍니다.
   const opts: GenerateAuthenticationOptionsOpts = {
