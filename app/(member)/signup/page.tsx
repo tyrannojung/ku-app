@@ -133,13 +133,11 @@ export default function Signup() {
 
             // 계정생성 옵션을 통해 계정(하드웨어에 키저장)을 생성합니다.
             const passkey = await startRegistration(response.data);
-            console.log("checkdepasskey====", passkey)
             // 유저의 고유 id
             const credId = `0x${base64url.toBuffer(passkey.id).toString('hex')}`;
             //유저의 pubk x, y 쌍을 구한다.
             const decodedPassKey = decodeRegistrationCredential(passkey);
-            console.log("checkdecodepasskey====", decodedPassKey)
-              
+
             // 유저의 pubk x, y쌍
             const pubKeyCoordinates = [
               '0x' +
