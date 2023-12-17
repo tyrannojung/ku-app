@@ -15,16 +15,17 @@ export type UserDevice = Omit<
 };
 
 type User = {
-  email: string;
-  devices: UserDevice[];
+  email: string
+  devices: UserDevice[]
+  txCheck: boolean
 };
 
 export const findUser = async (email: string) => {
   const info = {
     info : `${email}`
 } 
-  const user2 = await fetch('http://localhost:3000/api/authapi/check/' + JSON.stringify(info), {cache: 'no-store'});
-  const user: User = await user2.json();
+  const result = await fetch('http://localhost:3000/api/authapi/check/' + JSON.stringify(info), {cache: 'no-store'});
+  const user: User = await result.json();
 
   return user;
 };

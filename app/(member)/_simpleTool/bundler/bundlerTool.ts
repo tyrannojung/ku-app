@@ -145,7 +145,6 @@ export async function bundlerSign(value : UserOperation, member : member): Promi
     }
     // 아래 코드를 뷰로 보여준다.
     const txHash = receipt.receipt.transactionHash
-    
     const options = {
       method: 'POST',
       headers: {
@@ -153,14 +152,17 @@ export async function bundlerSign(value : UserOperation, member : member): Promi
       },
       body: JSON.stringify({
         _id: member._id,
+        txCheck: true,
+        txhash: txHash
       }),
     }
 
     const resp = await fetch('/api/member/txupdate/', options);
-
-
-
-    console.log(`UserOperation included: https://goerli.lineascan.build/tx/${txHash}`)
-
-    return true
+    const data = await resp.json()
+    console.log("result=====", data)
+    if(data.result){
+      console.log(`UserOperation included: https://goerli.lineascan.build/tx/${txHash}`)
+    }
+    return data.result
+    
 }

@@ -13,7 +13,7 @@ export interface member {
     updatedAt? : Date | null
     createAt? : Date
     devices? : UserDevice[]
-    tx? : boolean
+    txCheck? : boolean
     txhash? : string
 }
 

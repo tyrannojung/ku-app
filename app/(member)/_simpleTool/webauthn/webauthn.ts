@@ -25,6 +25,7 @@ import { isoBase64URL } from "@simplewebauthn/server/helpers";
 import { bundlerCall } from "../bundler/bundlerTool";
 import { UserOperation } from "permissionless";
 import base64url from 'base64url';
+import { member } from "@/app/_types/member";
 
 // 계정 생성 옵션
 export const generateWebAuthnRegistrationOptions = async (email: string) => {
@@ -125,13 +126,37 @@ export const verifyWebAuthnRegistration = async (
 };
 
 export const generateWebAuthnLoginOptions = async (email: string) => {
+  
   const user = await findUser(email);
+  
+  //가입이 안되어 있는 경우
   if (!user) {
     return {
       success: false,
       message: "User does not exist",
     };
+  // 스마트컨트랙트 지갑을 이미 생성한 경우
+  }else if(user.txCheck){
+    const result = await generateOptions('already', user);
+    
+    // option 생성 실패
+    if(result?.resultValue){
+      return {
+        success: false,
+        message: "Something went wrong!",
+      }; 
+    }
+    // option 생성 성공
+    return {
+      success: true,
+      tx: true,
+      data: result?.options
+    };
+
   }
+  
+  // 스마트컨트랙트 지갑 생성(신규 가입 및 로그인 유저)
+
   // 유저의 요청을 생성합니다.
   const userOperation: UserOperation = await bundlerCall(user);
   // --> 여기에서 지갑 생성, user요청, paymaster가 담긴 operation을 압축해서 signature에 담아줍니다.
@@ -238,3 +263,41 @@ export const verifyWebAuthnLogin = async (data: AuthenticationResponseJSON) => {
     success: verification.verified,
   };
 };
+
+
+async function generateOptions(type:string, user:member) {
+  let options = null
+  if(!user.devices){
+    return {
+      resultValue: false,
+      options: options
+    }
+  }
+  const opts: GenerateAuthenticationOptionsOpts = {
+    timeout: 60000,
+    allowCredentials: user.devices.map((dev) => ({
+      id: isoBase64URL.toBuffer(dev.credentialID),
+      type: "public-key",
+      transports: dev.transports,
+    })),
+    userVerification: "required",
+    rpID: rpId,
+  };
+  // 신규가입일 때,
+  if(type == "new") {
+  
+  // 기존가입자일 때,
+  } else {
+    
+    options = await generateAuthenticationOptions(opts);
+    await updateCurrentSession({ currentChallenge: options.challenge, email: user.email });
+    
+    return {
+      resultValue: true,
+      options: options
+    }
+
+  }
+
+}
+

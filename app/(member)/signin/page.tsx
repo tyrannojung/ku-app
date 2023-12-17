@@ -55,6 +55,14 @@ export default function Signin() {
                 // 로그인(기존 하드웨어 키 생성) 옵션을 만들어 줍니다.
                 // 해당 response에서 bundler에게 보낼 operation을 challenge로 만들어 유저에게 서명을 요청합니다.
                 const response = await generateWebAuthnLoginOptions(values.email);
+
+                if (response.tx){
+                  setErrors({
+                    email: 'hi'
+                  });
+                  return
+                }
+
                 if (!response.success || !response.data || !response.user) {
                   setErrors({
                     email: ' That email is not registered on this site. ',
