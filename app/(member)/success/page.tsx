@@ -15,7 +15,7 @@ export default function Home() {
       return
     }
     
-    const text = 'Hello Vitalic' + session.user;
+    const text = 'Hello Vitalic'
     let index = 0;
 
     function animateText() {

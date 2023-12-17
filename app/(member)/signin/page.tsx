@@ -9,6 +9,7 @@ import { UserOperation } from "permissionless";
 import { bundlerSign } from "../_simpleTool/bundler/bundlerTool";
 import Loader from "@/app/_components/Loading";
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 import {
   startAuthentication,
@@ -31,6 +32,7 @@ import { toHex } from "viem"
 export default function Signin() {
 
   const { Formik } = formik;
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   const validationSchema = yup.object().shape({
@@ -39,7 +41,7 @@ export default function Signin() {
       .required('Required')
   });
 
-   (
+  return (
       <div>
         {loading ? ( // 로딩 중일 때
           <Loader content = {'Creating a smart contract wallet and messaging Vitalik!'} />
@@ -55,7 +57,7 @@ export default function Signin() {
                 // 로그인(기존 하드웨어 키 생성) 옵션을 만들어 줍니다.
                 // 해당 response에서 bundler에게 보낼 operation을 challenge로 만들어 유저에게 서명을 요청합니다.
                 const response = await generateWebAuthnLoginOptions(values.email);             
-
+                console.log(response)
                 if (!response.success || !response.user) {
                   setErrors({
                     email: ' That email is not registered on this site.',
@@ -125,19 +127,14 @@ export default function Signin() {
 
                   // 성공 완료
                   if(result?.ok) {
-                      alert("success")
+                    router.push('/success');
+                    router.refresh();
                   } else {
                     // error 표시
                     setErrors({
                       email: ' ',
                     });
-                  }
-                    
-                
-
-                
-
-                
+                  }                
             }}
           >
             {({ handleSubmit, handleChange, values, touched, errors}) => (

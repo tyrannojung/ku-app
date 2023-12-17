@@ -141,9 +141,10 @@ export const generateWebAuthnLoginOptions = async (email: string) => {
     else if(user.txCheck)
   {
     const result = await generateOptions('already', user);
+    console.log(result)
     
     // option 생성 실패
-    if(result.resultValue){
+    if(!result.resultValue){
       return {
         success: false,
         message: "Something went wrong!",
