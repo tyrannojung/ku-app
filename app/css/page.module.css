@@ -19,6 +19,59 @@
   height: auto;
 }
 
+
+.notLoggedIn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px;
+}
+
+.notLoggedIn h1 {
+  margin-bottom: 20px;
+  font-size: 24px;
+  color: #333;
+}
+
+.loadingContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.loadingText {
+  font-size: 28px;
+  color: #007bff;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+@media (max-width: 768px) {
+  .loadingText {
+    font-size: 24px;
+  }
+}
+
+.mainPageLink {
+  color: #007bff;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+@media (max-width: 768px) {
+  .notLoggedIn h1 {
+    font-size: 20px;
+  }
+}
+
 .mainButton {
   padding: 15px 30px;
   font-size: 18px;
@@ -54,17 +107,58 @@
   color: #1952C0; 
 }
 
+.domainSection {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 20px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+}
+
+.domainLabel {
+  margin-right: 10px;
+  font-weight: bold;
+  color: #333;
+}
+
+.domainLink {
+  color: #007bff;
+  text-decoration: none;
+  font-weight: bold;
+  border-bottom: 2px solid transparent;
+  transition: border-color 0.3s;
+}
+
+.domainLink:hover {
+  border-bottom: 2px solid #007bff;
+}
+
+@media (max-width: 768px) {
+  .domainSection {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .domainLabel {
+    margin-bottom: 5px;
+  }
+}
+
+
+
+
+
+
 .blinkingBar {
   margin-left: 4px; /* 바와 텍스트 사이의 간격 조절 */
   animation: blink-animation 0.8s infinite; /* 깜박임 애니메이션 설정 */
 }
 
-.domainText {
-  margin-top: 8px; /* 도메인 텍스트와의 간격 조절 */
-  font-size: 18px; /* 원하는 폰트 크기로 조절 */
-  color: #555; /* 원하는 색상으로 조절 */
-  display : block
-}
+
+
 
 @keyframes blink-animation {
   50% {

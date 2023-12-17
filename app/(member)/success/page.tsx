@@ -39,7 +39,9 @@ export default function Home() {
     <main className={styles.main}>
     {
       status === "loading"
-      ? <h1>loading</h1>
+      ? <div className={styles.loadingContainer}>
+          <h1 className={styles.loadingText}>Loading...</h1>
+        </div>
       : session && session.user
       ?
       <div className={styles.center}>
@@ -50,12 +52,21 @@ export default function Home() {
           </Link>
         </div>
         {showDomain && (
-          <div className={styles.domainText}>
-            <p>Link : </p> <Link href={"https://goerli.lineascan.build/tx/" + session.user.txhash} className={styles.underlinedLink}>{"https://goerli.lineascan.build/tx/" + session.user.txhash}</Link>
-          </div>
+                  <div className={styles.domainSection}>
+                    <p className={styles.domainLabel}>Transaction Link:</p>
+                    <Link href={"https://goerli.lineascan.build/tx/" + session.user.txhash} className={styles.domainLink}>
+                      {"https://goerli.lineascan.build/tx/" + session.user.txhash}
+                    </Link>
+                  </div>
         )}
       </div>
-      : <h1>로그인이 되어 있지 않습니다.</h1>
+      :         
+    <div className={styles.notLoggedIn}>
+      <h1>You are not logged in</h1>
+      <Link href="/" className={styles.mainPageLink}>
+         Go to Main Page
+      </Link>
+    </div>
     }
   </main>
   );
