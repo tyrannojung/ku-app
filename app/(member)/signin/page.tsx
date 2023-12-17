@@ -128,6 +128,7 @@ export default function Signin() {
                     }
                 } catch(error) {
                   console.log(error)
+                  
                   setIsSubmitting(false);
                   setErrors({
                     email: 'Something went wrong!',
