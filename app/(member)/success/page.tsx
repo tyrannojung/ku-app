@@ -14,7 +14,6 @@ export default function Home() {
     if (session == null) {
       return
     }
-    
     const text = 'Hello Vitalic'
     let index = 0;
 
@@ -34,7 +33,7 @@ export default function Home() {
     }
 
     animateText();
-  }, []);
+  }, [session]);
 
   return (
     <main className={styles.main}>
@@ -52,11 +51,11 @@ export default function Home() {
         </div>
         {showDomain && (
           <div className={styles.domainText}>
-            <p>Link : </p> <Link href={"https://goerli.lineascan.build/tx/" + session.user.txhash} className={styles.underlinedLink}>{"https://goerli.lineascan.build/tx/" + session.user.txhash}`</Link>
+            <p>Link : </p> <Link href={"https://goerli.lineascan.build/tx/" + session.user.txhash} className={styles.underlinedLink}>{"https://goerli.lineascan.build/tx/" + session.user.txhash}</Link>
           </div>
         )}
-      </div> 
-      : <h1>wrong</h1>
+      </div>
+      : <h1>로그인이 되어 있지 않습니다.</h1>
     }
   </main>
   );
