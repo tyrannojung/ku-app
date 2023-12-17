@@ -194,7 +194,7 @@ export const generateWebAuthnLoginOptions = async (email: string) => {
         {
           id: options.allowCredentials[0].id,
           type: 'public-key',
-          transports: ['internal'],
+          transports: ['internal', 'hybrid'],
         },
       ],
     };

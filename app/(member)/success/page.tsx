@@ -44,20 +44,24 @@ export default function Home() {
         </div>
       : session && session.user
       ?
-      <div className={styles.center}>
+      <div>
         <div className={styles.logoContainer}>
-          <Link href="/" className={styles.domainLink}>
-            <span ref={linkRef} style={{ fontSize: '28px' }} ></span>
-            {showBar && <span className={styles.blinkingBar}>|</span>}
-          </Link>
+          <div className={styles.typingContainer}>
+          <span ref={linkRef} className={styles.typingText}></span>
+          {showBar && <span className={styles.blinkingBar}></span>}
+        </div>
         </div>
         {showDomain && (
+          <div className={styles.center}>
                   <div className={styles.domainSection}>
                     <p className={styles.domainLabel}>Transaction Link:</p>
                     <Link href={"https://goerli.lineascan.build/tx/" + session.user.txhash} className={styles.domainLink}>
                       {"https://goerli.lineascan.build/tx/" + session.user.txhash}
                     </Link>
+                    
                   </div>
+                  <button className={styles.logoutButton} onClick={() => signOut({ callbackUrl: '/' })}>Logout</button>
+          </div>
         )}
       </div>
       :         

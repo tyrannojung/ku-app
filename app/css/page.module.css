@@ -19,7 +19,6 @@
   height: auto;
 }
 
-
 .notLoggedIn {
   display: flex;
   flex-direction: column;
@@ -54,22 +53,10 @@
   100% { transform: scale(1); }
 }
 
-@media (max-width: 768px) {
-  .loadingText {
-    font-size: 24px;
-  }
-}
-
 .mainPageLink {
   color: #007bff;
   text-decoration: none;
   font-weight: bold;
-}
-
-@media (max-width: 768px) {
-  .notLoggedIn h1 {
-    font-size: 20px;
-  }
 }
 
 .mainButton {
@@ -90,23 +77,6 @@
   background-color: #2980b9;
 }
 
-.domainLink {
-  font-size: 24px;
-  font-family: 'Roboto', sans-serif;
-  color: #2775FF;
-  transition: color 0.3s ease-in-out; 
-
-}
-
-.underlinedLink {
-  text-decoration: underline;
-  /* 다른 스타일도 추가 가능 */
-}
-
-.domainLink:hover {
-  color: #1952C0; 
-}
-
 .domainSection {
   display: flex;
   align-items: center;
@@ -116,12 +86,14 @@
   border: 1px solid #ddd;
   border-radius: 8px;
   background-color: #f8f9fa;
+  flex-wrap: wrap; /* Allows items to wrap in smaller screens */
 }
 
 .domainLabel {
   margin-right: 10px;
   font-weight: bold;
   color: #333;
+  white-space: nowrap; /* Prevents the label from breaking into multiple lines */
 }
 
 .domainLink {
@@ -130,42 +102,50 @@
   font-weight: bold;
   border-bottom: 2px solid transparent;
   transition: border-color 0.3s;
+  word-break: break-all; /* Breaks the link into multiple lines if needed */
 }
 
 .domainLink:hover {
   border-bottom: 2px solid #007bff;
 }
 
-@media (max-width: 768px) {
-  .domainSection {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .domainLabel {
-    margin-bottom: 5px;
-  }
+.typingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  background-color: #f2f2f2; /* Light background for the typing area */
+  border-radius: 8px;
+  margin: 10px 0;
 }
 
-
-
-
-
+.typingText {
+  font-size: 28px;
+  font-family: 'Courier New', monospace; /* Gives a typewriter-like effect */
+  color: #333;
+}
 
 .blinkingBar {
-  margin-left: 4px; /* 바와 텍스트 사이의 간격 조절 */
-  animation: blink-animation 0.8s infinite; /* 깜박임 애니메이션 설정 */
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 4px;
+  height: 1em;
+  width: 2px;
+  background-color: #333;
+  animation: blink-animation 0.8s infinite;
 }
 
-
-
+@keyframes blink-animation {
+  50% {
+    opacity: 0;
+  }
+}
 
 @keyframes blink-animation {
   50% {
     opacity: 0; /* 50%의 시간 동안 바를 보이지 않도록 함 */
   }
 }
-
 
 @media (max-width: 768px) {
   .logo {
@@ -175,5 +155,58 @@
   .mainButton {
     font-size: 16px;
   }
+
+  .loadingText {
+    font-size: 24px;
+  }
+
+  .notLoggedIn h1 {
+    font-size: 20px;
+  }
+
+  .domainSection {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 15px; /* Increase padding for better spacing on small screens */
+  }
+
+  .domainLabel, .domainLink {
+    margin-bottom: 10px; /* Add some margin at the bottom for spacing */
+    text-align: left; /* Align text to the left for consistency */
+  }
 }
 
+
+
+.center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.logoutButton {
+  padding: 10px 20px;
+  font-size: 16px;
+  color: #333;
+  background-color: #e0e0e0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.logoutButton:hover {
+  background-color: #d5d5d5;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .logoutButton {
+    padding: 8px 15px;
+    font-size: 14px;
+  }
+}
