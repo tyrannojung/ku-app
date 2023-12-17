@@ -24,7 +24,7 @@ export const findUser = async (email: string) => {
   const info = {
     info : `${email}`
 } 
-  const result = await fetch('http://localhost:3000/api/authapi/check/' + JSON.stringify(info), {cache: 'no-store'});
+  const result = await fetch('/api/authapi/check/' + JSON.stringify(info), {cache: 'no-store'});
   const user: User = await result.json();
 
   return user;
