@@ -24,8 +24,8 @@ export const findUser = async (email: string) => {
   const info = {
     info : `${email}`
 } 
-console.log(`user is ????======${process.env.NEXT_PUBLIC_VERCEL_URL}`)
-  const result = await fetch(`${process.env.NEXT_PUBLIC_VERCEL_URL}/api/authapi/check/` + JSON.stringify(info), {cache: 'no-store'});
+console.log(`user is ????======${process.env.MAIN_URL}`)
+  const result = await fetch(`${process.env.MAIN_URL}api/authapi/check/` + JSON.stringify(info), {cache: 'no-store'});
   const user: User = await result.json();
 
   return user;
