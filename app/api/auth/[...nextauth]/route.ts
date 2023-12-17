@@ -1,6 +1,5 @@
 import NextAuth from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
-import { member } from "@/app/_types/member"
 
 
 const handler = NextAuth({
