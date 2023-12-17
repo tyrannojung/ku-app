@@ -191,7 +191,8 @@ export default function Signup() {
               });
               return
             }
-          } catch {
+          } catch(error) {
+            console.log(error)
             setIsSubmitting(false);
             setErrors({
               id: ' ',
