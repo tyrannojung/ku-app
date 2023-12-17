@@ -25,7 +25,7 @@ const handler = NextAuth({
           }),
         }
 
-        const res = await fetch(`${process.env.MAIN_URL }api/member/signin`, options);
+        const res = await fetch(`${process.env.MAIN_URL}api/member/signin`, options);
         const user = await res.json();
 
         if (user.result) {
