@@ -54,7 +54,7 @@ export default function Home() {
         {showDomain && (
           <div className={styles.center}>
                   <div className={styles.domainSection}>
-                    <p className={styles.domainLabel}>Transaction Link:</p>
+                    <div className={styles.domainLabel}>Transaction Link:</div>
                     <Link href={"https://goerli.lineascan.build/tx/" + session.user.txhash} className={styles.domainLink} target="_blank">
                       {"https://goerli.lineascan.build/tx/" + session.user.txhash}
                     </Link>
