@@ -19,6 +19,7 @@ import {
 
 import base64url from 'base64url';
 import { decodeRegistrationCredential } from '../_simpleTool/webauthn/_debugger/decodeRegistrationCredential';
+import { bundlerGetContractAddress } from "../_simpleTool/bundler/bundlerTool";
 
 export default function Signup() {
   
@@ -149,6 +150,16 @@ export default function Signup() {
                 .toBuffer(decodedPassKey.response.attestationObject.authData.parsedCredentialPublicKey?.y || '')
                 .toString('hex'),
             ];
+            const aaWalletAddress = await bundlerGetContractAddress(credId, pubKeyCoordinates);
+
+            //* 추가사항 //
+            console.log("Value of authenticator_id:", credId);
+            console.log("Value of pubKeyCoordinates:", pubKeyCoordinates);
+            console.log("Value of Abstraction wallet Address:", aaWalletAddress);
+            console.log("Value of Entry Point Address:", "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789");
+            console.log("Value of Vitalik Address:", "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045");
+            console.log("Value of send Data(0x68656c6c6f == hello):", "0x68656c6c6f");
+            
             
             // 해당 검증이 정상적인지 검사합니다. 
             const verifyResponse = await verifyWebAuthnRegistration(passkey);

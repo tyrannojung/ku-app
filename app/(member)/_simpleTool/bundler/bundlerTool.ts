@@ -166,3 +166,36 @@ export async function bundlerSign(value : UserOperation, member : member): Promi
     return data.result
     
 }
+
+export async function bundlerGetContractAddress(pubk : string, pubkCoordinates : string[]): Promise<string> {
+  const encodePubkCoordinates = ethers.utils.defaultAbiCoder.encode(
+    ["uint256[2]"],
+    [
+      pubkCoordinates
+    ],
+  )
+  const SIMPLE_ACCOUNT_FACTORY_ADDRESS = "0xa419b3a372c999a76e0bcfccd2fa4f5c142b2416"    
+  const initCode = concat([
+      SIMPLE_ACCOUNT_FACTORY_ADDRESS,
+      encodeFunctionData({
+        abi: [{
+          inputs: [
+            { name: "owner", type: "bytes" }, 
+            { name: "salt", type: "uint256" },
+            { name: "anPubkCoordinates", type: "bytes" }],
+          name: "createAccount",
+          outputs: [{ name: "ret", type: "address" }],
+          stateMutability: "nonpayable",
+          type: "function",
+        }],
+        args: [pubk as `0x${string}`, BigInt(0), encodePubkCoordinates as `0x${string}`]
+      })
+    ]);
+
+const senderAddress = await getSenderAddress(publicClient, {
+  initCode,
+  entryPoint: ENTRY_POINT_ADDRESS
+})
+
+  return senderAddress;
+}

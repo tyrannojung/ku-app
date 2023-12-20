@@ -178,11 +178,6 @@ export default function Signin() {
                                 className="mb-3"
                                 controlId="formBasicCheckbox"
                               >
-                                <p className="small">
-                                  <a className="text-primary" href="#!">
-                                    Forgot password?
-                                  </a>
-                                </p>
                               </Form.Group>
                               <div className="d-grid">
                                 <Button variant="primary" type="submit">
