@@ -56,16 +56,39 @@ export default function Test() {
                 messages.push("옵션 생성 애러")
                 return;
             }
-            
+
+            console.log("======response=======")
             console.log(response)
+            
 
             // 계정생성 옵션을 통해 계정(하드웨어에 키저장)을 생성합니다.
             const passkey = await startRegistration(response.data);
+
+            console.log("======startRegistration=======")
+            console.log(passkey)
+
             // 유저의 고유 id
             const credId = `0x${base64url.toBuffer(passkey.id).toString('hex')}`;
             //유저의 pubk x, y 쌍을 구한다.
             const decodedPassKey = decodeRegistrationCredential(passkey);
             
+            console.log("======decodedPassKey=======")
+            console.log(decodedPassKey)
+            
+            // const supportsDirectAttestation = !!decodedPassKey.response.attestationObject.attStmt.sig;
+            // console.log({ supportsDirectAttestation });
+
+            const ecVerifyInputs = authResponseToSigVerificationInput(
+                decodedPassKey.response.attestationObject.authData.parsedCredentialPublicKey,
+                {
+                  authenticatorData: decodedPassKey.response.authenticatorData!,
+                  clientDataJSON: passkey.response.clientDataJSON,
+                  signature: decodedPassKey.response.attestationObject.attStmt.sig!,
+                },
+              );
+            console.log("======ecVerifyInputs=======")
+            console.log(ecVerifyInputs);
+
             // 유저의 pubk x, y쌍
             const pubKeyCoordinates = [
                 '0x' +
@@ -78,33 +101,58 @@ export default function Test() {
                     .toString('hex'),
             ];
 
-            messages.push(`Value of authenticator_id: ${credId}`)
-            messages.push(`Value of pubKeyCoordinates:: ${pubKeyCoordinates}`)
+            const challengeOffsetRegex = new RegExp(`(.*)${Buffer.from(response.data.challenge).toString('hex')}`);
+            console.log("challengeOffsetRegex====", challengeOffsetRegex)
+            const challengePrefix = challengeOffsetRegex.exec(
+              base64url.toBuffer(passkey.response.clientDataJSON).toString('hex'),
+            )?.[1];
+            console.log({ challengeOffsetRegex, challengePrefix });
+
+
+            let new_push0 = decodedPassKey.response.attestationObject.authData.flagsMask;
+            console.log({new_push0})
+            let new_push1 = `0x${base64url.toBuffer(passkey.response.authenticatorData!).toString('hex')}`
+            console.log({new_push1})
+            let new_push2 = `0x${base64url.toBuffer(passkey.response.clientDataJSON).toString('hex')}`
+            console.log({new_push2})
+            let new_push3 = `0x${Buffer.from(response.data.challenge).toString('hex')}`;
+            console.log({new_push3})
+            let new_push4 = Buffer.from(challengePrefix || '', 'hex').length
+            console.log({new_push4})
+
+            messages.push(`New Push authenticatorDataFlagMask ===${new_push0}`)
+            messages.push(`New Push authenticatorData ===${new_push1}`)
+            messages.push(`New Push clientData ===${new_push2}`)
+            messages.push(`New Push clientChallenge ===${new_push3}`)
+            messages.push(`New Push clientChallengeOffset ===${new_push4}`)
+            messages.push(`New Push rs ===${ecVerifyInputs.publicKeyCoordinates[0]}, ${ecVerifyInputs.publicKeyCoordinates[1]}`)
+            messages.push(`New Push Q ===${ecVerifyInputs.signature[0]}, ${ecVerifyInputs.signature[1]}`)
             
+
             // 해당 검증이 정상적인지 검사합니다. 
             const verifyResponse = await verifyWebAuthnRegistration(passkey);
             if (verifyResponse.value) {
-                const member_info : member = {
-                    id : enteredId,
-                    publicKey : verifyResponse.value.credentialPublicKey,
-                    pubk : credId,
-                    pubkCoordinates : pubKeyCoordinates,
-                    email : enteredEmail,
-                    name : enteredName,
-                    updatedAt : null,
-                    createAt : new Date(),
-                    devices : [verifyResponse.value]
-                }
-                const options = {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(member_info)
-                }
-                const resp = await fetch('/api/member/signup/', options);
-                const data = await resp.json()
-                console.log(data)
+                // const member_info : member = {
+                //     id : enteredId,
+                //     publicKey : verifyResponse.value.credentialPublicKey,
+                //     pubk : credId,
+                //     pubkCoordinates : pubKeyCoordinates,
+                //     email : enteredEmail,
+                //     name : enteredName,
+                //     updatedAt : null,
+                //     createAt : new Date(),
+                //     devices : [verifyResponse.value]
+                // }
+                // const options = {
+                //     method: 'POST',
+                //     headers: {
+                //         'Content-Type': 'application/json'
+                //     },
+                //     body: JSON.stringify(member_info)
+                // }
+                // const resp = await fetch('/api/member/signup/', options);
+                // const data = await resp.json()
+                // console.log(data)
             }    
 
             setSignUpMessage(messages);
@@ -155,18 +203,18 @@ export default function Test() {
           
             console.log("======verifyResponse=======")
             console.log(verifyResponse)
-            
+
             // sig가 검증이 잘 되었는지 검사합니다.
             if (!verifyResponse.success) {
                 messages.push("검증 애러")
                 return;
             } 
-            
+            setSignInMessage(messages);
         
         }catch(error){
             console.log(error)
             messages.push("Something went wrong!")
-            setSignUpMessage(messages);
+            setSignInMessage(messages);
         }
     };
 
