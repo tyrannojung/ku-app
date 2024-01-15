@@ -2,6 +2,7 @@
 import styles from './css/page.module.css'
 import React, { useState } from 'react';
 import { member } from "@/app/_types/member"
+import { v4 as uuid } from 'uuid';
 import {
   startRegistration,
   startAuthentication
@@ -59,10 +60,62 @@ export default function Test() {
 
             console.log("======response=======")
             console.log(response)
-            
+            console.log(response.data.challenge)
+
+            let test = response.data.challenge;
+            // base64url 인코딩된 문자열을 표준 base64로 변환
+            let standardBase64 = test.replace(/-/g, '+').replace(/_/g, '/');
+            // 표준 base64 인코딩된 데이터를 바이너리 데이터로 디코딩
+            let testBuffer = Buffer.from(standardBase64, 'base64');
+            // 바이너리 데이터를 헥사데시멀 형태로 변환
+            let testchallengeHex = testBuffer.toString('hex');
+            console.log('Hexadecimal challenge', testchallengeHex);
+            // 헥사데시멀 형태의 문자열 앞에 '0x' 추가
+            let testchallenge = `0x${testchallengeHex}`;
+            console.log(`testchallenge`, testchallenge);
+            // 헥사데시멀 형태의 문자열을 다시 바이너리 데이터로 변환
+            // let testBuffer2 = Buffer.from(testchallenge.slice(2), 'hex');
+            // // 바이너리 데이터를 다시 base64url 인코딩
+            // let testencodedChallenge = base64url.encode(testBuffer2);
+            // console.log('base64url challenge', testencodedChallenge);
 
             // 계정생성 옵션을 통해 계정(하드웨어에 키저장)을 생성합니다.
             const passkey = await startRegistration(response.data);
+
+            console.log("======startRegistration=======")
+            console.log(passkey)
+
+
+            /**New =====  */
+            const userChallenge = testchallenge
+            const challenge = Buffer.from(userChallenge.slice(2), 'hex');
+            const encodedChallenge = base64url.encode(challenge);
+            console.log('base6url challenge', base64url.encode(challenge));
+            
+
+            // const passkey = await startRegistration({
+            //     rp: {
+            //       name: 'WebAuthn.io (Dev)',
+            //       id: 'localhost',
+            //     },
+            //     user: {
+            //       id: enteredEmail,
+            //       name: enteredName,
+            //       displayName: enteredId,
+            //     },
+            //     challenge: base64url.encode(challenge),
+            //     pubKeyCredParams: [
+            //       {
+            //         type: 'public-key',
+            //         alg: -7,
+            //       },
+            //     ],
+            //     timeout: 60000,
+            //     authenticatorSelection: {
+            //       // authenticatorAttachment: 'platform', // can prevent simulator from running the webauthn request
+            //     },
+            //     attestation: 'direct',
+            //   });
 
             console.log("======startRegistration=======")
             console.log(passkey)
@@ -88,6 +141,10 @@ export default function Test() {
               );
             console.log("======ecVerifyInputs=======")
             console.log(ecVerifyInputs);
+            
+            const supportsDirectAttestation = !!decodedPassKey.response.attestationObject.attStmt.sig;
+            console.log({ supportsDirectAttestation });
+
 
             // 유저의 pubk x, y쌍
             const pubKeyCoordinates = [
@@ -101,8 +158,7 @@ export default function Test() {
                     .toString('hex'),
             ];
 
-            const challengeOffsetRegex = new RegExp(`(.*)${Buffer.from(response.data.challenge).toString('hex')}`);
-            console.log("challengeOffsetRegex====", challengeOffsetRegex)
+            const challengeOffsetRegex = new RegExp(`(.*)${Buffer.from(encodedChallenge).toString('hex')}`);
             const challengePrefix = challengeOffsetRegex.exec(
               base64url.toBuffer(passkey.response.clientDataJSON).toString('hex'),
             )?.[1];
@@ -115,7 +171,7 @@ export default function Test() {
             console.log({new_push1})
             let new_push2 = `0x${base64url.toBuffer(passkey.response.clientDataJSON).toString('hex')}`
             console.log({new_push2})
-            let new_push3 = `0x${Buffer.from(response.data.challenge).toString('hex')}`;
+            let new_push3 = userChallenge
             console.log({new_push3})
             let new_push4 = Buffer.from(challengePrefix || '', 'hex').length
             console.log({new_push4})
@@ -125,35 +181,13 @@ export default function Test() {
             messages.push(`New Push clientData ===${new_push2}`)
             messages.push(`New Push clientChallenge ===${new_push3}`)
             messages.push(`New Push clientChallengeOffset ===${new_push4}`)
-            messages.push(`New Push rs ===${ecVerifyInputs.publicKeyCoordinates[0]}, ${ecVerifyInputs.publicKeyCoordinates[1]}`)
-            messages.push(`New Push Q ===${ecVerifyInputs.signature[0]}, ${ecVerifyInputs.signature[1]}`)
+            messages.push(`New Push rs ===${ecVerifyInputs.signature[0]}, ${ecVerifyInputs.signature[1]}`)
+            messages.push(`New Push Q ===${ecVerifyInputs.publicKeyCoordinates[0]}, ${ecVerifyInputs.publicKeyCoordinates[1]}`)
             
 
             // 해당 검증이 정상적인지 검사합니다. 
             const verifyResponse = await verifyWebAuthnRegistration(passkey);
-            if (verifyResponse.value) {
-                // const member_info : member = {
-                //     id : enteredId,
-                //     publicKey : verifyResponse.value.credentialPublicKey,
-                //     pubk : credId,
-                //     pubkCoordinates : pubKeyCoordinates,
-                //     email : enteredEmail,
-                //     name : enteredName,
-                //     updatedAt : null,
-                //     createAt : new Date(),
-                //     devices : [verifyResponse.value]
-                // }
-                // const options = {
-                //     method: 'POST',
-                //     headers: {
-                //         'Content-Type': 'application/json'
-                //     },
-                //     body: JSON.stringify(member_info)
-                // }
-                // const resp = await fetch('/api/member/signup/', options);
-                // const data = await resp.json()
-                // console.log(data)
-            }    
+ 
 
             setSignUpMessage(messages);
         }
