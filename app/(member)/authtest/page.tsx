@@ -10,9 +10,13 @@ import {
 import {
   generateWebAuthnRegistrationOptions,
   verifyWebAuthnRegistration,
-  generateWebAuthnLoginOptions,
   verifyWebAuthnLogin
 } from "../_simpleTool/webauthn/webauthn";
+
+import {
+    testGenerateWebAuthnLoginOptions
+} from "./webauthn/testwebauthn"
+
 import base64url from 'base64url';
 import { decodeRegistrationCredential } from '../_simpleTool/webauthn/_debugger/decodeRegistrationCredential';
 import { decodeAuthenticationCredential } from '../_simpleTool/webauthn/_debugger/decodeAuthenticationCredential';
@@ -21,8 +25,8 @@ import { authResponseToSigVerificationInput } from '../_simpleTool/webauthn/_deb
 export default function Test() {
     const [signUpMessage, setSignUpMessage] = useState<string[]>([]);
     const [signInMessage, setSignInMessage] = useState<string[]>([]);
-    const [idValue, setIdValue] = useState('enk0209');
-    const [emailValue, setEmailValue] = useState('enk0209@naver.com');
+    const [idValue, setIdValue] = useState('enk0220');
+    const [emailValue, setEmailValue] = useState('enk0220@naver.com');
     const [nameValue, setNameValue] = useState('다운');
 
     const handleIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -171,7 +175,7 @@ export default function Test() {
             
             // 로그인(기존 하드웨어 키 생성) 옵션을 만들어 줍니다.
             // 해당 response에서 bundler에게 보낼 operation을 challenge로 만들어 유저에게 서명을 요청합니다.
-            const response = await generateWebAuthnLoginOptions(enteredEmail);             
+            const response = await testGenerateWebAuthnLoginOptions(enteredEmail);             
             const challenge = response.data.challenge
             console.log(`challenge`, challenge);
             let userChallenge = response.userOperation?.signature;

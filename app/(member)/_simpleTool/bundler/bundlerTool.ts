@@ -5,7 +5,6 @@ import { concat, createClient, createPublicClient, encodeFunctionData, http, Hex
 import { UserOperation, bundlerActions, getSenderAddress, getUserOperationHash, GetUserOperationReceiptReturnType } from "permissionless"
 import { pimlicoBundlerActions, pimlicoPaymasterActions } from "permissionless/actions/pimlico"
 import { lineaTestnet } from "viem/chains"
-import { kv } from "@vercel/kv";
 
 const publicClient = createPublicClient({
   transport: http("https://linea-goerli.infura.io/v3/4c79c22d05294f9f81fbe2501462ac22"),
@@ -30,7 +29,8 @@ const ENTRY_POINT_ADDRESS = "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789"
 
 export async function bundlerCall(value : member): Promise<UserOperation> {
    
-      const encodePubkCoordinates = ethers.utils.defaultAbiCoder.encode(
+      const abiCoder = new ethers.AbiCoder();
+      const encodePubkCoordinates = abiCoder.encode(
           ["uint256[2]"],
           [
             value.pubkCoordinates
@@ -169,7 +169,8 @@ export async function bundlerSign(value : UserOperation, member : member): Promi
 }
 
 export async function bundlerGetContractAddress(pubk : string, pubkCoordinates : string[]): Promise<string> {
-  const encodePubkCoordinates = ethers.utils.defaultAbiCoder.encode(
+  const abiCoder = new ethers.AbiCoder();
+  const encodePubkCoordinates = abiCoder.encode(
     ["uint256[2]"],
     [
       pubkCoordinates

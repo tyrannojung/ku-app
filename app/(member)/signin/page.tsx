@@ -89,9 +89,9 @@ export default function Signin() {
                   if (!response.tx){
                     // 해당 signature에 대한 sig 쌍(sig1, sig2)를 구합니다.
                     const ecVerifyInputs = authResponseToSigVerificationInput({}, signatureResponse.response);
-                    
+                    const abiCoder = new ethers.AbiCoder();
                     // sig 값과 sig 검증 hash를 ethereum에 보내기 위해 데이터타입에 맞춰 인코딩 합니다.
-                    const p256sig = ethers.utils.defaultAbiCoder.encode(
+                    const p256sig = abiCoder.encode(
                       ["bytes32", "uint256[2]"],
                       [
                         ecVerifyInputs.messageHash,
