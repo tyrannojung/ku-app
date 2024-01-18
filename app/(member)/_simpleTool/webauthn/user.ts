@@ -16,6 +16,7 @@ export type UserDevice = Omit<
 
 type User = {
   email: string
+  pubkCoordinates: string[]
   devices: UserDevice[]
   txCheck: boolean
 };

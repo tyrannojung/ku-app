@@ -15,17 +15,15 @@ import {
 } from "../_simpleTool/webauthn/webauthn";
 import base64url from 'base64url';
 import { decodeRegistrationCredential } from '../_simpleTool/webauthn/_debugger/decodeRegistrationCredential';
-
-/** sign in import */
+import { decodeAuthenticationCredential } from '../_simpleTool/webauthn/_debugger/decodeAuthenticationCredential';
 import { authResponseToSigVerificationInput } from '../_simpleTool/webauthn/_debugger/authResponseToSigVerificationInput';
-import { ethers } from 'ethers';
 
 export default function Test() {
     const [signUpMessage, setSignUpMessage] = useState<string[]>([]);
     const [signInMessage, setSignInMessage] = useState<string[]>([]);
-    const [idValue, setIdValue] = useState('enk0206');
-    const [emailValue, setEmailValue] = useState('enk0206@naver.com');
-    const [nameValue, setNameValue] = useState('양은경');
+    const [idValue, setIdValue] = useState('enk0209');
+    const [emailValue, setEmailValue] = useState('enk0209@naver.com');
+    const [nameValue, setNameValue] = useState('다운');
 
     const handleIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setIdValue(e.target.value);
@@ -42,9 +40,7 @@ export default function Test() {
     /** ======================================================== */
     /** SignUp Test */
     const handleSignUpClick = async () => {
-        const messages = [
-            "Signed Up Start",
-        ];
+        const messages = [];
         
         try{
             let enteredEmail = emailValue;
@@ -62,60 +58,16 @@ export default function Test() {
             console.log(response)
             console.log(response.data.challenge)
 
-            let test = response.data.challenge;
-            // base64url 인코딩된 문자열을 표준 base64로 변환
-            let standardBase64 = test.replace(/-/g, '+').replace(/_/g, '/');
-            // 표준 base64 인코딩된 데이터를 바이너리 데이터로 디코딩
-            let testBuffer = Buffer.from(standardBase64, 'base64');
-            // 바이너리 데이터를 헥사데시멀 형태로 변환
-            let testchallengeHex = testBuffer.toString('hex');
-            console.log('Hexadecimal challenge', testchallengeHex);
-            // 헥사데시멀 형태의 문자열 앞에 '0x' 추가
-            let testchallenge = `0x${testchallengeHex}`;
-            console.log(`testchallenge`, testchallenge);
-            // 헥사데시멀 형태의 문자열을 다시 바이너리 데이터로 변환
-            // let testBuffer2 = Buffer.from(testchallenge.slice(2), 'hex');
-            // // 바이너리 데이터를 다시 base64url 인코딩
-            // let testencodedChallenge = base64url.encode(testBuffer2);
-            // console.log('base64url challenge', testencodedChallenge);
+            const challenge = response.data.challenge;
+            let standardBase64 = challenge.replace(/-/g, '+').replace(/_/g, '/');
+            let challengeBuffer = Buffer.from(standardBase64, 'base64');
+            let challengeHex = challengeBuffer.toString('hex');
+            let userChallenge = `0x${challengeHex}`;
+            console.log(`userChallenge`, userChallenge);
+
 
             // 계정생성 옵션을 통해 계정(하드웨어에 키저장)을 생성합니다.
             const passkey = await startRegistration(response.data);
-
-            console.log("======startRegistration=======")
-            console.log(passkey)
-
-
-            /**New =====  */
-            const userChallenge = testchallenge
-            const challenge = Buffer.from(userChallenge.slice(2), 'hex');
-            const encodedChallenge = base64url.encode(challenge);
-            console.log('base6url challenge', base64url.encode(challenge));
-            
-
-            // const passkey = await startRegistration({
-            //     rp: {
-            //       name: 'WebAuthn.io (Dev)',
-            //       id: 'localhost',
-            //     },
-            //     user: {
-            //       id: enteredEmail,
-            //       name: enteredName,
-            //       displayName: enteredId,
-            //     },
-            //     challenge: base64url.encode(challenge),
-            //     pubKeyCredParams: [
-            //       {
-            //         type: 'public-key',
-            //         alg: -7,
-            //       },
-            //     ],
-            //     timeout: 60000,
-            //     authenticatorSelection: {
-            //       // authenticatorAttachment: 'platform', // can prevent simulator from running the webauthn request
-            //     },
-            //     attestation: 'direct',
-            //   });
 
             console.log("======startRegistration=======")
             console.log(passkey)
@@ -141,10 +93,6 @@ export default function Test() {
               );
             console.log("======ecVerifyInputs=======")
             console.log(ecVerifyInputs);
-            
-            const supportsDirectAttestation = !!decodedPassKey.response.attestationObject.attStmt.sig;
-            console.log({ supportsDirectAttestation });
-
 
             // 유저의 pubk x, y쌍
             const pubKeyCoordinates = [
@@ -158,37 +106,53 @@ export default function Test() {
                     .toString('hex'),
             ];
 
-            const challengeOffsetRegex = new RegExp(`(.*)${Buffer.from(encodedChallenge).toString('hex')}`);
+            const challengeOffsetRegex = new RegExp(`(.*)${Buffer.from(challenge).toString('hex')}`);
             const challengePrefix = challengeOffsetRegex.exec(
               base64url.toBuffer(passkey.response.clientDataJSON).toString('hex'),
             )?.[1];
-            console.log({ challengeOffsetRegex, challengePrefix });
-
 
             let new_push0 = decodedPassKey.response.attestationObject.authData.flagsMask;
-            console.log({new_push0})
             let new_push1 = `0x${base64url.toBuffer(passkey.response.authenticatorData!).toString('hex')}`
-            console.log({new_push1})
             let new_push2 = `0x${base64url.toBuffer(passkey.response.clientDataJSON).toString('hex')}`
-            console.log({new_push2})
             let new_push3 = userChallenge
-            console.log({new_push3})
             let new_push4 = Buffer.from(challengePrefix || '', 'hex').length
-            console.log({new_push4})
 
-            messages.push(`New Push authenticatorDataFlagMask ===${new_push0}`)
-            messages.push(`New Push authenticatorData ===${new_push1}`)
-            messages.push(`New Push clientData ===${new_push2}`)
-            messages.push(`New Push clientChallenge ===${new_push3}`)
-            messages.push(`New Push clientChallengeOffset ===${new_push4}`)
-            messages.push(`New Push rs ===${ecVerifyInputs.signature[0]}, ${ecVerifyInputs.signature[1]}`)
-            messages.push(`New Push Q ===${ecVerifyInputs.publicKeyCoordinates[0]}, ${ecVerifyInputs.publicKeyCoordinates[1]}`)
+            messages.push(`const authenticatorDataFlagMask = "${new_push0}"`)
+            messages.push(`const authenticatorData = "${new_push1}"`)
+            messages.push(`const clientData = "${new_push2}"`)
+            messages.push(`const clientChallenge = "${new_push3}"`)
+            messages.push(`const clientChallengeOffset = "${new_push4}"`)
+            messages.push(`const rs = ["${ecVerifyInputs.signature[0]}", "${ecVerifyInputs.signature[1]}"]`)
+            messages.push(`const Q = ["${ecVerifyInputs.publicKeyCoordinates[0]}", "${ecVerifyInputs.publicKeyCoordinates[1]}"]`)
             
 
             // 해당 검증이 정상적인지 검사합니다. 
             const verifyResponse = await verifyWebAuthnRegistration(passkey);
- 
-
+            if (verifyResponse.value) {
+                const member_info : member = {
+                    id : enteredId,
+                    publicKey : verifyResponse.value.credentialPublicKey,
+                    pubk : credId,
+                    pubkCoordinates : pubKeyCoordinates,
+                    email : enteredEmail,
+                    name : enteredName,
+                    updatedAt : null,
+                    createAt : new Date(),
+                    devices : [verifyResponse.value]
+                }
+                const options = {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(member_info)
+                }
+                
+                const resp = await fetch('/api/member/signup/', options);
+                const data = await resp.json()
+                console.log(data)
+            }    
+        
             setSignUpMessage(messages);
         }
         catch(error){
@@ -200,9 +164,7 @@ export default function Test() {
     };
 
     const handleSignInClick = async () => {
-        const messages = [
-            "Signed In Start",
-        ];
+        const messages = [];
         
         try{
             let enteredEmail = emailValue;
@@ -210,11 +172,17 @@ export default function Test() {
             // 로그인(기존 하드웨어 키 생성) 옵션을 만들어 줍니다.
             // 해당 response에서 bundler에게 보낼 operation을 challenge로 만들어 유저에게 서명을 요청합니다.
             const response = await generateWebAuthnLoginOptions(enteredEmail);             
-            
+            const challenge = response.data.challenge
+            console.log(`challenge`, challenge);
+            let userChallenge = response.userOperation?.signature;
+            console.log(`userChallenge`, userChallenge);
+
+
             if (!response.success || !response.user) {
                 messages.push("옵션 생성 애러")
                 return;
             }
+            
             console.log("======response=======")
             console.log(response)
             
@@ -223,15 +191,41 @@ export default function Test() {
                 challenge: response.data.challenge,
                 allowCredentials: response.data.allowCredentials,
             });
-
+            
             console.log("======signatureResponse=======")
             console.log(signatureResponse)
+
+            const decodedPassKey = decodeAuthenticationCredential(signatureResponse);
+            
+            console.log("======decodedPassKey=======")
+            console.log(decodedPassKey)
 
             // 해당 signature에 대한 sig 쌍(sig1, sig2)를 구합니다.
             const ecVerifyInputs = authResponseToSigVerificationInput({}, signatureResponse.response);
 
             console.log("======ecVerifyInputs=======")
             console.log(ecVerifyInputs)
+
+            const challengeOffsetRegex = new RegExp(`(.*)${Buffer.from(challenge).toString('hex')}`);
+            const challengePrefix = challengeOffsetRegex.exec(
+              base64url.toBuffer(signatureResponse.response.clientDataJSON).toString('hex'),
+            )?.[1];
+            console.log("challengeOffsetRegex, challengePrefix", challengeOffsetRegex, challengePrefix)
+            
+            let new_push0 = decodedPassKey.response.authenticatorData.flagsMask;
+            let new_push1 = `0x${base64url.toBuffer(signatureResponse.response.authenticatorData!).toString('hex')}`
+            let new_push2 = `0x${base64url.toBuffer(signatureResponse.response.clientDataJSON).toString('hex')}`
+            let new_push3 = userChallenge
+            let new_push4 = Buffer.from(challengePrefix || '', 'hex').length
+
+            messages.push(`const authenticatorDataFlagMask = "${new_push0}"`)
+            messages.push(`const authenticatorData = "${new_push1}"`)
+            messages.push(`const clientData = "${new_push2}"`)
+            messages.push(`const clientChallenge = "${new_push3}"`)
+            messages.push(`const clientChallengeOffset = "${new_push4}"`)
+            messages.push(`const rs = ["${ecVerifyInputs.signature[0]}", "${ecVerifyInputs.signature[1]}"]`)
+            messages.push(`const Q = ["${response.user.pubkCoordinates[0]}", "${response.user.pubkCoordinates[1]}"]`)
+            
 
             const verifyResponse = await verifyWebAuthnLogin(signatureResponse);
           
@@ -251,6 +245,10 @@ export default function Test() {
             setSignInMessage(messages);
         }
     };
+
+
+      
+
 
     return (
         <div>
