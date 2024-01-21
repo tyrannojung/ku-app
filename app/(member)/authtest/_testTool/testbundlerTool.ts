@@ -2,10 +2,9 @@ import { entrypointContract, factoryContract, simpleFacotryAddress, entryPointAd
 import { member, UserOperationType } from "@/app/_types/member"
 import { ethers } from 'ethers';
 import { concat, encodeFunctionData } from "viem"
-import { estimateUserOperationGas, paymasterSponsorUserOperation } from './testbundlerAPI'
+import { estimateUserOperationGas, paymasterSponsorUserOperation, sendUserOperation } from './testbundlerAPI'
 
 export async function testBundlerCall(value : member) : Promise<UserOperationType>{
-  console.log("value=====",   value)  
   const abiCoder = new ethers.AbiCoder();
     const encodePubkCoordinates = abiCoder.encode(
         ["uint256[2]"],
@@ -78,32 +77,48 @@ export async function testBundlerCall(value : member) : Promise<UserOperationTyp
     userOperation.callGasLimit = "0x560c";
     userOperation.verificationGasLimit = "0x98129";
     userOperation.preVerificationGas = "0xc034";
-    userOperation.maxFeePerGas = "0x656703D00";
-    userOperation.maxPriorityFeePerGas = "0x13AB6680";
+    userOperation.maxFeePerGas = "0x0";
+    userOperation.maxPriorityFeePerGas = "0x0";
     userOperation.paymasterAndData = "0x";
     // dummy value
-    userOperation.signature = "0x89f201864b89cb77b9efc64247303031e655aaa977e13d525ad94a4a4cc233853fadf0a7dc2c2e55c1c3a4d93a36afe58941c714bc4f0a4d35d391292d6a8f7e1b";
+    userOperation.signature = "0x";
     
     // paymaster 등록을 먼저 한다.
     const paymaster_result_param = await paymasterSponsorUserOperation(userOperation)
-    console.log("paymaster_result_param===", paymaster_result_param)
+    console.log("paymaster_result_param====", paymaster_result_param.result)
     userOperation.paymasterAndData = paymaster_result_param.result
-    console.log(userOperation)
 
     // bundler 가스 추정치를 업데이트 한다.
     const bunder_result_param = await estimateUserOperationGas(userOperation);
-    console.log("bunder_result_param===", bunder_result_param)
-
+    console.log("bunder_result_param====", bunder_result_param)
     userOperation.callGasLimit = bunder_result_param.result.callGasLimit
     userOperation.verificationGasLimit = bunder_result_param.result.verificationGasLimit
     userOperation.preVerificationGas = bunder_result_param.result.preVerificationGas
 
-    console.log(userOperation)
+    // // hex 값 업데이트
+    // console.log("preVerificationGas======",userOperation.preVerificationGas)
+    // let decimalValue = parseInt(userOperation.preVerificationGas, 16);
+    // // 10000을 더함
+    // let newDecimalValue = decimalValue + 10000;
+    // // 결과를 다시 16진수로 변환
+    // let newHexValue = "0x" + newDecimalValue.toString(16);
+    // console.log("newHexValue=====", newHexValue); 
+    // userOperation.preVerificationGas = newHexValue
+    // ////////////////////////
+
     const userOpHash = await entrypointContract.getUserOpHash(userOperation);
     console.log("userOpHash======", userOpHash)
     userOperation.signature = userOpHash;
 
 
     return userOperation;
+
+}
+
+export async function testBundlerSend(value : UserOperationType, member : member) : Promise<boolean> {
+  const bundler_result_param = await sendUserOperation(value)
+  console.log(bundler_result_param)
+  
+  return true
 
 }

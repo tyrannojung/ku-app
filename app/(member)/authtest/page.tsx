@@ -2,7 +2,7 @@
 import styles from './css/page.module.css'
 import React, { useState } from 'react';
 import { member } from "@/app/_types/member"
-import { v4 as uuid } from 'uuid';
+import { ethers } from 'ethers';
 import {
   startRegistration,
   startAuthentication
@@ -21,6 +21,8 @@ import base64url from 'base64url';
 import { decodeRegistrationCredential } from '../_simpleTool/webauthn/_debugger/decodeRegistrationCredential';
 import { decodeAuthenticationCredential } from '../_simpleTool/webauthn/_debugger/decodeAuthenticationCredential';
 import { authResponseToSigVerificationInput } from '../_simpleTool/webauthn/_debugger/authResponseToSigVerificationInput';
+
+import { testBundlerSend } from './_testTool/testbundlerTool'
 
 export default function Test() {
     const [signUpMessage, setSignUpMessage] = useState<string[]>([]);
@@ -230,6 +232,32 @@ export default function Test() {
             messages.push(`const rs = ["${ecVerifyInputs.signature[0]}", "${ecVerifyInputs.signature[1]}"]`)
             messages.push(`const Q = ["${response.user.pubkCoordinates[0]}", "${response.user.pubkCoordinates[1]}"]`)
             
+            // const fail_test : any = []
+            // fail_test.push(ecVerifyInputs.signature[0])
+            // fail_test.push("0x9b0a3397f24677f039e5c96a937f1c94a4e5e19acd814d2ac1eb386e3a926909")
+            // console.log(fail_test)
+
+            const abiCoder = new ethers.AbiCoder();
+            const challengeUpdate = abiCoder.encode(
+                ["bytes1", "bytes", "bytes", "bytes", "uint256", "uint256[2]"],
+                [
+                    new_push0,
+                    new_push1,
+                    new_push2,
+                    new_push3,
+                    new_push4,
+                    ecVerifyInputs.signature
+                ],
+              )
+            const userOperation: any = response.userOperation;
+            userOperation.signature = challengeUpdate 
+        
+            console.log("userOperation====", userOperation)
+            
+            const bundlerSendResult : boolean = await testBundlerSend(userOperation, response.user);
+
+
+
 
             const verifyResponse = await verifyWebAuthnLogin(signatureResponse);
           
