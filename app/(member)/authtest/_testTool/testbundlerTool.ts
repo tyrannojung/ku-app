@@ -73,17 +73,18 @@ export async function testBundlerCall(value : member) : Promise<UserOperationTyp
     userOperation.sender = senderAddress;
     userOperation.nonce = "0x0";
     userOperation.initCode = initCode;
+    //userOperation.initCode = "0x";
     userOperation.callData = callData;
     userOperation.callGasLimit = "0x560c";
     userOperation.verificationGasLimit = "0x98129";
-    userOperation.preVerificationGas = "0xc034";
-    userOperation.maxFeePerGas = "0x0";
-    userOperation.maxPriorityFeePerGas = "0x0";
+    userOperation.preVerificationGas = "0xEA60";
+    userOperation.maxFeePerGas = "0x656703D00";
+    userOperation.maxPriorityFeePerGas = "0x13AB6680";
     userOperation.paymasterAndData = "0x";
     // dummy value
     userOperation.signature = "0x";
     
-    // paymaster 등록을 먼저 한다.
+    //paymaster 등록을 먼저 한다.
     const paymaster_result_param = await paymasterSponsorUserOperation(userOperation)
     console.log("paymaster_result_param====", paymaster_result_param.result)
     userOperation.paymasterAndData = paymaster_result_param.result
@@ -95,15 +96,15 @@ export async function testBundlerCall(value : member) : Promise<UserOperationTyp
     userOperation.verificationGasLimit = bunder_result_param.result.verificationGasLimit
     userOperation.preVerificationGas = bunder_result_param.result.preVerificationGas
 
-    // // hex 값 업데이트
-    // console.log("preVerificationGas======",userOperation.preVerificationGas)
-    // let decimalValue = parseInt(userOperation.preVerificationGas, 16);
-    // // 10000을 더함
-    // let newDecimalValue = decimalValue + 10000;
-    // // 결과를 다시 16진수로 변환
-    // let newHexValue = "0x" + newDecimalValue.toString(16);
-    // console.log("newHexValue=====", newHexValue); 
-    // userOperation.preVerificationGas = newHexValue
+    // hex 값 업데이트
+    console.log("preVerificationGas======",userOperation.preVerificationGas)
+    let decimalValue = parseInt(userOperation.preVerificationGas, 16);
+    // 10000을 더함
+    let newDecimalValue = decimalValue + 10000;
+    // 결과를 다시 16진수로 변환
+    let newHexValue = "0x" + newDecimalValue.toString(16);
+    console.log("newHexValue=====", newHexValue); 
+    userOperation.preVerificationGas = newHexValue
     // ////////////////////////
 
     const userOpHash = await entrypointContract.getUserOpHash(userOperation);
