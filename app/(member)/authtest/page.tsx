@@ -27,8 +27,8 @@ import { testBundlerSend } from './_testTool/testbundlerTool'
 export default function Test() {
     const [signUpMessage, setSignUpMessage] = useState<string[]>([]);
     const [signInMessage, setSignInMessage] = useState<string[]>([]);
-    const [idValue, setIdValue] = useState('enk0200');
-    const [emailValue, setEmailValue] = useState('enk0200@naver.com');
+    const [idValue, setIdValue] = useState('enk02100');
+    const [emailValue, setEmailValue] = useState('enk02100@naver.com');
     const [nameValue, setNameValue] = useState('다운');
 
     const handleIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
