@@ -1,35 +1,30 @@
 import {
+  factoryk1Contract,
+  simpleFacotryk1Address,
   entrypointContract,
-  factoryContract,
-  simpleFacotryAddress,
   entryPointAddress,
+  provider,
+  CHAIN_ID,
 } from "./contracts";
-import { member, UserOperationType } from "@/app/_types/member";
-import { ethers } from "ethers";
 import { concat, encodeFunctionData } from "viem";
+import { UserOperationType } from "@/app/_types/member";
 import {
   estimateUserOperationGas,
   paymasterSponsorUserOperation,
   sendUserOperation,
 } from "./testbundlerAPI";
+import { ethers } from "ethers";
+import { signUserOp } from "./userOp";
 
-export async function testBundlerCall(
-  value: member
-): Promise<UserOperationType> {
-  const abiCoder = new ethers.AbiCoder();
-  const encodePubkCoordinates = abiCoder.encode(
-    ["uint256[2]"],
-    [value.pubkCoordinates]
-  );
-  console.log("encodePubkCoordinates", encodePubkCoordinates);
-
+export async function testBundlerCall2() {
+  const publicKey = "0x46897603e2A82755E9c416eF828Bd1515536b3D5";
   const initCode = concat([
-    simpleFacotryAddress,
+    simpleFacotryk1Address,
     encodeFunctionData({
       abi: [
         {
           inputs: [
-            { name: "anPubkCoordinates", type: "bytes" },
+            { name: "owner", type: "address" },
             { name: "salt", type: "uint256" },
           ],
           name: "createAccount",
@@ -38,13 +33,12 @@ export async function testBundlerCall(
           type: "function",
         },
       ],
-      args: [encodePubkCoordinates as `0x${string}`, BigInt(0)],
+      args: [publicKey, BigInt(0)],
     }),
   ]);
 
-  // create2 결정론적인 주소 생성
-  const senderAddress = await factoryContract["getAddress(bytes, uint256)"](
-    encodePubkCoordinates,
+  const senderAddress = await factoryk1Contract["getAddress(address, uint256)"](
+    publicKey,
     0
   );
   console.log("Calculated sender address:", senderAddress);
@@ -86,9 +80,9 @@ export async function testBundlerCall(
   };
 
   userOperation.sender = senderAddress;
-  userOperation.nonce = "0x0";
-  userOperation.initCode = initCode;
-  // userOperation.initCode = "0x";
+  userOperation.nonce = "0x14";
+  // userOperation.initCode = initCode;
+  userOperation.initCode = "0x";
   userOperation.callData = callData;
   userOperation.callGasLimit = "0x560c";
   userOperation.verificationGasLimit = "0x98129";
@@ -96,15 +90,16 @@ export async function testBundlerCall(
   userOperation.maxFeePerGas = "0x656703D00";
   userOperation.maxPriorityFeePerGas = "0x13AB6680";
   userOperation.paymasterAndData = "0x";
-  // dummy value
-  userOperation.signature = "0x";
+  // dummy signature
+  userOperation.signature =
+    "0xa15569dd8f8324dbeabf8073fdec36d4b754f53ce5901e283c6de79af177dc94557fa3c9922cd7af2a96ca94402d35c39f266925ee6407aeb32b31d76978d4ba1c";
 
   //paymaster 등록을 먼저 한다.
-  const paymaster_result_param = await paymasterSponsorUserOperation(
-    userOperation
-  );
-  console.log("paymaster_result_param====", paymaster_result_param.result);
-  userOperation.paymasterAndData = paymaster_result_param.result;
+  // const paymaster_result_param = await paymasterSponsorUserOperation(
+  //   userOperation
+  // );
+  // console.log("paymaster_result_param====", paymaster_result_param.result);
+  // userOperation.paymasterAndData = paymaster_result_param.result;
 
   // bundler 가스 추정치를 업데이트 한다.
   const bunder_result_param = await estimateUserOperationGas(userOperation);
@@ -124,21 +119,25 @@ export async function testBundlerCall(
   let newHexValue = "0x" + newDecimalValue.toString(16);
   console.log("newHexValue=====", newHexValue);
   userOperation.preVerificationGas = newHexValue;
-  // ////////////////////////
 
   const userOpHash = await entrypointContract.getUserOpHash(userOperation);
   console.log("userOpHash======", userOpHash);
-  userOperation.signature = userOpHash;
 
-  return userOperation;
-}
+  const privateKey =
+    "0x14e0f7e29e2e964f0c82a25c385bed42309e202d3ea80f24233c028f2b357d0a";
 
-export async function testBundlerSend(
-  value: UserOperationType,
-  member: member
-): Promise<boolean> {
-  const bundler_result_param = await sendUserOperation(value);
+  // 공급자와 지갑 설정
+  const wallet = new ethers.Wallet(privateKey, provider);
+  const operationResult = signUserOp(
+    userOperation,
+    wallet,
+    entryPointAddress,
+    CHAIN_ID
+  );
+  // const signature = await wallet.signMessage(userOpHash);
+  //userOperation.signature = signature;
+
+  console.log(userOperation);
+  const bundler_result_param = await sendUserOperation(operationResult);
   console.log(bundler_result_param);
-
-  return true;
 }
